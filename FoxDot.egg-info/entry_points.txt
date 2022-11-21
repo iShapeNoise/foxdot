@@ -1,2 +1,0 @@
-[gui_scripts]
-FoxDot = FoxDot.__init__:main
