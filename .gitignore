@@ -7,7 +7,7 @@ FoxDot/lib/Extensions/VRender/tmp/*
 build/*
 dist/*
 FoxDot/lib/GhostCoder/*
-FoxDot/lib/Workspace/tmp/tempfile.txt
+#FoxDot/lib/Workspace/tmp/tempfile.txt
 changed_files.txt
 
 # To-do list
@@ -28,7 +28,7 @@ snd/mkdir.py
 # Sphinx build dir
 docs/_build/
 
-#*.txt
+*.txt
 
 # Windows image file caches
 Thumbs.db
