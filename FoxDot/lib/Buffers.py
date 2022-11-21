@@ -13,14 +13,12 @@ that can be proggrammed into performance.
 
 """
 from __future__ import absolute_import, division, print_function
-
 import fnmatch
 import os
 import wave
 from contextlib import closing
 from itertools import chain
 from os.path import abspath, join, isabs, isfile, isdir, splitext
-
 from .Code import WarningMsg
 from .Logging import Timing
 from .SCLang import SampleSynthDef
@@ -28,77 +26,76 @@ from .ServerManager import Server
 from .Settings import FOXDOT_SND, FOXDOT_LOOP, SAMPLES_DB
 
 
-alpha    = "abcdefghijklmnopqrstuvwxyz"
+alpha = "abcdefghijklmnopqrstuvwxyz"
 
-nonalpha = {"&" : "ampersand",
-            "*" : "asterix",
-            "@" : "at",
-            "\\" : "backslash",
-            "|" : "bar",
-            "^" : "caret",
-            ":" : "colon",
-            "$" : "dollar",
-            "=" : "equals",
-            "!" : "exclamation",
-            "/" : "forwardslash",
-            "#" : "hash",
-            "-" : "hyphen",
-            "<" : "lessthan",
-            "%" : "percent",
-            "+" : "plus",
-            "?" : "question",
-            ";" : "semicolon",
-            "~" : "tilde",
-            "1" : "1",
-            "2" : "2",
-            "3" : "3",
-            "4" : "4" }
+nonalpha = {"&": "ampersand",
+            "*": "asterix",
+            "@": "at",
+            "\\": "backslash",
+            "|": "bar",
+            "^": "caret",
+            ":": "colon",
+            "$": "dollar",
+            "=": "equals",
+            "!": "exclamation",
+            "/": "forwardslash",
+            "#": "hash",
+            "-": "hyphen",
+            "<": "lessthan",
+            "%": "percent",
+            "+": "plus",
+            "?": "question",
+            ";": "semicolon",
+            "~": "tilde",
+            "1": "1",
+            "2": "2",
+            "3": "3",
+            "4": "4"}
 
-DESCRIPTIONS = { 'a' : "Gameboy hihat",      'A' : "Gameboy kick drum",
-                 'b' : "Noisy beep",         'B' : "Short saw",
-                 'c' : "Voice/string",       'C' : "Choral",
-                 'd' : "Woodblock",          'D' : "Dirty snare",
-                 'e' : "Electronic Cowbell", 'E' : "Ringing percussion",
-                 'f' : "Pops",               'F' : "Trumpet stabs",
-                 'g' : "Ominous",            'G' : "Ambient stabs",
-                 'h' : "Finger snaps",       'H' : "Clap",
-                 'i' : "Jungle snare",       'I' : "Rock snare",
-                 'j' : "Whines",             'J' : "Ambient stabs",
-                 'k' : "Wood shaker",        'K' : "Percussive hits",
-                 'l' : "Robot noise",        'L' : "Noisy percussive hits",
-                 'm' : "808 toms",           'M' : "Acoustic toms",
-                 'n' : "Noise",              'N' : "Gameboy SFX",
-                 'o' : "Snare drum",         'O' : "Heavy snare",
-                 'p' : "Tabla",              'P' : "Tabla long",
-                 'q' : "Ambient stabs",      'Q' : "Electronic stabs",
-                 'r' : "Metal",              'R' : "Metallic",
-                 's' : "Shaker",             'S' : "Tambourine",
-                 't' : "Rimshot",            'T' : "Cowbell",
-                 'u' : "Soft snare",         'U' : "Misc. Fx",
-                 'v' : "Soft kick",          'V' : "Hard kick",
-                 'w' : "Dub hits",           'W' : "Distorted",
-                 'x' : "Bass drum",          'X' : "Heavy kick",
-                 'y' : "Percussive hits",    'Y' : "High buzz",
-                 'z' : "Scratch",            "Z" : "Loud stabs",
-                 '-' : "Hi hat closed",      "|" : "Hangdrum",
-                 '=' : "Hi hat open",        "/" : "Reverse sounds",
-                 '*' : "Clap",               "\\" : "Lazer",
-                 '~' : "Ride cymbal",        "%" : "Noise bursts",
-                 '^' : "'Donk'",             "$" : "Beatbox",
-                 '#' : "Crash",              "!" : "Yeah!",
-                 '+' : "Clicks",             "&" : "Chime",
-                 '@' : "Gameboy noise",      ":" : "Hi-hats",
-                 '1' : "Vocals (One)",
-                 '2' : 'Vocals (Two)',
-                 '3' : 'Vocals (Three)',
-                 '4' : 'Vocals (Four)'}
+DESCRIPTIONS = {'a': "Gameboy hihat",       'A': "Gameboy kick drum",
+                'b': "Noisy beep",          'B': "Short saw",
+                'c': "Voice/string",        'C': "Choral",
+                'd': "Woodblock",           'D': "Dirty snare",
+                'e': "Electronic Cowbell",  'E': "Ringing percussion",
+                'f': "Pops",                'F': "Trumpet stabs",
+                'g': "Ominous",             'G': "Ambient stabs",
+                'h': "Finger snaps",        'H': "Clap",
+                'i': "Jungle snare",        'I': "Rock snare",
+                'j': "Whines",               'J': "Ambient stabs",
+                'k': "Wood shaker",         'K': "Percussive hits",
+                'l': "Robot noise",         'L': "Noisy percussive hits",
+                'm': "808 toms",            'M': "Acoustic toms",
+                'n': "Noise",               'N': "Gameboy SFX",
+                'o': "Snare drum",          'O': "Heavy snare",
+                'p': "Tabla",               'P': "Tabla long",
+                'q': "Ambient stabs",       'Q': "Electronic stabs",
+                'r': "Metal",               'R': "Metallic",
+                's': "Shaker",              'S': "Tambourine",
+                't': "Rimshot",             'T': "Cowbell",
+                'u': "Soft snare",          'U': "Misc. Fx",
+                'v': "Soft kick",           'V': "Hard kick",
+                'w': "Dub hits",            'W': "Distorted",
+                'x': "Bass drum",           'X': "Heavy kick",
+                'y': "Percussive hits",     'Y': "High buzz",
+                'z': "Scratch",             "Z": "Loud stabs",
+                '-': "Hi hat closed",       "|": "Hangdrum",
+                '=': "Hi hat open",         "/": "Reverse sounds",
+                '*': "Clap",                "\\": "Lazer",
+                '~': "Ride cymbal",         "%": "Noise bursts",
+                '^': "'Donk'",              "$": "Beatbox",
+                '#': "Crash",               "!": "Yeah!",
+                '+': "Clicks",              "&": "Chime",
+                '@': "Gameboy noise",       ":": "Hi-hats",
+                '1': "Vocals (One)",
+                '2': 'Vocals (Two)',
+                '3': 'Vocals (Three)',
+                '4': 'Vocals (Four)'}
+
 
 # Function-like class for searching directory for sample based on symbol
-
 class _symbolToDir:
 
-    def __init__(self, root, sdb):
-
+    def __init__(self, root):
         self.set_root(root)
 
     def set_root(self, root):
@@ -127,13 +124,15 @@ class _symbolToDir:
         else:
             return None
 
+
 sdb = SAMPLES_DB
-symbolToDir = _symbolToDir(FOXDOT_SND, sdb) # singleton
+symbolToDir = _symbolToDir(FOXDOT_SND)  # singleton
+
 
 class Buffer(object):
     def __init__(self, fn, number, channels=1):
         self.fn = fn
-        self.bufnum   = int(number)
+        self.bufnum = int(number)
         self.channels = channels
 
     def __repr__(self):
@@ -163,10 +162,9 @@ class BufferManager(object):
         self._nextbuf = 1
         self._buffers = [None for _ in range(self._max_buffers)]
         self._fn_to_buf = {}
-        self._paths = [join(FOXDOT_SND, str(SAMPLES_DB), FOXDOT_LOOP)] + list(paths)
+        self._paths = [join(FOXDOT_SND, str(sdb), FOXDOT_LOOP)] + list(paths)
         self._ext = ['wav', 'wave', 'aif', 'aiff', 'flac']
-
-        self.loops = [fn.rsplit(".", 1)[0] for fn in os.listdir(join(FOXDOT_SND, str(SAMPLES_DB), FOXDOT_LOOP))]
+        self.loops = [fn.rsplit(".", 1)[0] for fn in os.listdir(join(FOXDOT_SND, str(sdb), FOXDOT_LOOP))]
 
     def __str__(self):
         return "\n".join(["%r: %s" % (k, v) for k, v in sorted(DESCRIPTIONS.items())])
@@ -439,55 +437,65 @@ Samples = BufferManager()
 
 
 class LoopSynthDef(SampleSynthDef):
+
     def __init__(self):
         SampleSynthDef.__init__(self, "loop")
         self.pos = self.new_attr_instance("pos")
         self.sample = self.new_attr_instance("sample")
-        self.sdb = self.new_attr_instance("sdb")
+        #self.sdb = self.new_attr_instance("sdb")
         self.beat_stretch = self.new_attr_instance("beat_stretch")
-        self.defaults['pos']   = 0
-        self.defaults['sample']   = 0
-        self.defaults['sdb'] = SAMPLES_DB
+        self.defaults['pos'] = 0
+        self.defaults['sample'] = 0
+        #self.defaults['sdb'] = int(sdb)
         self.defaults['beat_stretch'] = 0
         self.base.append("rate = (rate * (1-(beat_stretch>0))) + ((BufDur.kr(buf) / sus) * (beat_stretch>0));")
         self.base.append("osc = PlayBuf.ar(2, buf, BufRateScale.kr(buf) * rate, startPos: BufSampleRate.kr(buf) * pos, loop: 1.0);")
         self.base.append("osc = osc * EnvGen.ar(Env([0,1,1,0],[0.05, sus-0.05, 0.05]));")
         self.osc = self.osc * self.amp
         self.add()
+
     def __call__(self, filename, pos=0, sample=0, **kwargs):
         kwargs["buf"] = Samples.loadBuffer(filename, sample)
         proxy = SampleSynthDef.__call__(self, pos, **kwargs)
         proxy.kwargs["filename"] = filename
         return proxy
 
+
 class StretchSynthDef(SampleSynthDef):
+
     def __init__(self):
         SampleSynthDef.__init__(self, "stretch")
         self.base.append("osc = Warp1.ar(2, buf, Line.kr(0,1,sus), rate, windowSize: 0.2, overlaps: 4, interp:2);")
         self.base.append("osc = osc * EnvGen.ar(Env([0,1,1,0],[0.05, sus-0.05, 0.05]));")
         self.osc = self.osc * self.amp
         self.add()
+
     def __call__(self, filename, pos=0, sample=0, **kwargs):
         kwargs["buf"] = Samples.loadBuffer(filename, sample)
         proxy = SampleSynthDef.__call__(self, pos, **kwargs)
         proxy.kwargs["filename"] = filename
         return proxy
 
+
 class GranularSynthDef(SampleSynthDef):
+
     def __init__(self):
         SampleSynthDef.__init__(self, "gsynth")
         self.pos = self.new_attr_instance("pos")
         self.sample = self.new_attr_instance("sample")
-        self.defaults['pos']   = 0
-        self.defaults['sample']   = 0
-        self.defaults['sdb'] = SAMPLES_DB
+        self.sdb = self.new_attr_instance("sdb")
+        self.defaults['pos'] = 0
+        self.defaults['sample'] = 0
+        self.defaults['sdb'] = int(sdb)
         self.base.append("osc = PlayBuf.ar(2, buf, BufRateScale.kr(buf) * rate, startPos: BufSampleRate.kr(buf) * pos);")
         self.base.append("osc = osc * EnvGen.ar(Env([0,1,1,0],[0.05, sus-0.05, 0.05]));")
         self.osc = self.osc * self.amp
         self.add()
+
     def __call__(self, filename, pos=0, sample=0, **kwargs):
         kwargs["buf"] = Samples.loadBuffer(filename, sample)
         return SampleSynthDef.__call__(self, pos, **kwargs)
+
 
 loop = LoopSynthDef()
 stretch = StretchSynthDef()
