@@ -91,6 +91,8 @@ DESCRIPTIONS = {'a': "Gameboy hihat",       'A': "Gameboy kick drum",
                 '3': 'Vocals (Three)',
                 '4': 'Vocals (Four)'}
 
+sdb = SAMPLES_DB
+
 
 # Function-like class for searching directory for sample based on symbol
 class _symbolToDir:
@@ -125,7 +127,6 @@ class _symbolToDir:
             return None
 
 
-sdb = SAMPLES_DB
 symbolToDir = _symbolToDir(FOXDOT_SND)  # singleton
 
 
@@ -442,11 +443,11 @@ class LoopSynthDef(SampleSynthDef):
         SampleSynthDef.__init__(self, "loop")
         self.pos = self.new_attr_instance("pos")
         self.sample = self.new_attr_instance("sample")
-        #self.sdb = self.new_attr_instance("sdb")
+        self.sdb = self.new_attr_instance("sdb")
         self.beat_stretch = self.new_attr_instance("beat_stretch")
         self.defaults['pos'] = 0
         self.defaults['sample'] = 0
-        #self.defaults['sdb'] = int(sdb)
+        self.defaults['sdb'] = sdb
         self.defaults['beat_stretch'] = 0
         self.base.append("rate = (rate * (1-(beat_stretch>0))) + ((BufDur.kr(buf) / sus) * (beat_stretch>0));")
         self.base.append("osc = PlayBuf.ar(2, buf, BufRateScale.kr(buf) * rate, startPos: BufSampleRate.kr(buf) * pos, loop: 1.0);")
@@ -454,8 +455,12 @@ class LoopSynthDef(SampleSynthDef):
         self.osc = self.osc * self.amp
         self.add()
 
-    def __call__(self, filename, pos=0, sample=0, **kwargs):
-        kwargs["buf"] = Samples.loadBuffer(filename, sample)
+    def __call__(self, filename, sdb=sdb, pos=0, sample=0, **kwargs):
+        kwargs["buf"] = Samples.loadBuffer(
+                                    join(FOXDOT_SND,
+                                         str(sdb),
+                                         FOXDOT_LOOP + filename),
+                                    sample)
         proxy = SampleSynthDef.__call__(self, pos, **kwargs)
         proxy.kwargs["filename"] = filename
         return proxy
@@ -470,8 +475,12 @@ class StretchSynthDef(SampleSynthDef):
         self.osc = self.osc * self.amp
         self.add()
 
-    def __call__(self, filename, pos=0, sample=0, **kwargs):
-        kwargs["buf"] = Samples.loadBuffer(filename, sample)
+    def __call__(self, filename, pos=0, sample=0, sdb=sdb, **kwargs):
+        kwargs["buf"] = Samples.loadBuffer(
+                                    join(FOXDOT_SND,
+                                         str(sdb),
+                                         FOXDOT_LOOP + filename),
+                                    sample)
         proxy = SampleSynthDef.__call__(self, pos, **kwargs)
         proxy.kwargs["filename"] = filename
         return proxy
@@ -486,7 +495,7 @@ class GranularSynthDef(SampleSynthDef):
         self.sdb = self.new_attr_instance("sdb")
         self.defaults['pos'] = 0
         self.defaults['sample'] = 0
-        self.defaults['sdb'] = int(sdb)
+        self.defaults['sdb'] = sdb
         self.base.append("osc = PlayBuf.ar(2, buf, BufRateScale.kr(buf) * rate, startPos: BufSampleRate.kr(buf) * pos);")
         self.base.append("osc = osc * EnvGen.ar(Env([0,1,1,0],[0.05, sus-0.05, 0.05]));")
         self.osc = self.osc * self.amp

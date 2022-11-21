@@ -1,4 +1,4 @@
-SynthDef.new(\filterSwell,
+SynthDef.new(\swell,
 {|bus, swell, sus, hpr|
 var osc,env;
 osc = In.ar(bus, 2);

@@ -262,7 +262,7 @@ class SampleChart:
                 self.path = self.db_path_l + self.char + "/lower/" + path
             self.cmd = "play"
         elif self.char == "loops":
-            self.path = self.db_path_l + FOXDOT_LOOP + "/" + path
+            self.path = self.db_path_l + FOXDOT_LOOP + path
             self.cmd = "loop"
             self.char = os.path.splitext(path)[0]
         else:
