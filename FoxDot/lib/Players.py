@@ -225,7 +225,6 @@ class Player(Repeatable):
     envelope_keywords = ("atk", "decay", "rel", "legato", "curve", "gain")
 
     # Base attributes
-
     base_attributes = ('sus', 'fmod', 'pan', 'rate',
                        'amp', 'midinote', 'channel')
 
@@ -234,7 +233,6 @@ class Player(Repeatable):
     internal_keywords = tuple(value for value in keywords if value != "degree")
 
     # Aliases
-
     alias = {"pitch": "degree",
              "char": "degree"}
 
@@ -1453,121 +1451,80 @@ class Player(Repeatable):
         return
 
     def new_message_header(self, event, **kwargs):
-        """ Returns the header of an osc message to be added to by osc_message() """
+        """
+        Returns the header of an osc message to be added to by osc_message()
+        """
 
-        # Let SC know the duration of 1 beat so effects can use it and adjust sustain too
-
+        # Let SC know the duration of 1 beat so effects can use it and
+        # adjust sustain too
         beat_dur = self.metro.beat_dur()
 
         message = {"beat_dur": beat_dur, "sus": kwargs.get(
             "sus", event["sus"]) * beat_dur}
 
         if self.synthdef == SamplePlayer:
-
             degree = kwargs.get("degree", event['degree'])
             sample = kwargs.get("sample", event["sample"])
             sdb = kwargs.get("sdb", event["sdb"])
             rate = kwargs.get("rate", event["rate"])
 
             if rate < 0:
-
                 sus = kwargs.get("sus", event["sus"])
-
                 pos = self.metro.beat_dur(sus)
-
             else:
-
                 pos = 0
 
             buf = self.samples.getBufferFromSymbol(
                 str(degree), sdb, sample).bufnum
-
             message.update({'buf': buf, 'pos': pos})
 
             # Update player key
-
             if "buf" in self.accessed_keys:
-
                 self.buf = buf
 
         elif self.synthdef == LoopPlayer:
-
             pos = kwargs.get("degree", event["degree"])
             buf = kwargs.get("buf", event["buf"])
-
             # Get a user-specified tempo
-
             given_tempo = kwargs.get(
                 "tempo", self.event.get("tempo", self.metro.bpm))
-
             if given_tempo in (None, 0):
-
                 tempo = 1
-
             else:
-
                 tempo = self.metro.bpm / given_tempo
-
             # Set the position in "beats"
-
             pos = pos * tempo * self.metro.beat_dur(1)
-
             # If there is a negative rate, move the pos forward
-
             rate = kwargs.get("rate", event["rate"])
-
             if rate == 0:
-
                 rate = 1
-
             # Adjust the rate to a given tempo
-
             rate = float(tempo * rate)
-
             if rate < 0:
-
                 sus = kwargs.get("sus", event["sus"])
-
                 pos += self.metro.beat_dur(sus)
-
             message.update({'pos': pos, 'buf': buf, 'rate': rate})
-
         else:
-
             degree = kwargs.get("degree", event["degree"])
             octave = kwargs.get("oct", event["oct"])
             root = kwargs.get("root", event["root"])
             sdb = kwargs.get("sdb", event["sdb"])
             scale = kwargs.get("scale", self.scale)
-
-            if degree == None:
-
+            if degree is None:
                 freq, midinote = None, None
-
             else:
-
                 freq, midinote = get_freq_and_midi(degree, octave, root, scale)
-
             message.update({'freq':  freq, 'midinote': midinote})
-
             # Updater player key
-
             if "freq" in self.accessed_keys:
-
                 self.freq = freq
 
             if "midinote" in self.accessed_keys:
-
                self.midinote = midinote
-
         # Update the dict with other values from the event
-
         event.update(message)
-
         # Remove keys we dont need
-
         del event["bpm"]
-
         return event
 
     def set_queue_block(self, queue_block):
@@ -1591,58 +1548,41 @@ class Player(Repeatable):
         return synthdef
 
     def addfx(self, **kwargs):
-        """ Not implemented - add an effect to the SynthDef bus on SuperCollider
-            after it has been triggered. """
+        """ Not implemented - add an effect to the SynthDef bus on
+            SuperCollider after it has been triggered. """
         return self
 
     #: Methods for stop/starting players
-
     def kill(self):
         """ Removes this object from the Clock and resets itself"""
-
         self.isplaying = False
         self.stopping = True
-
         self.reset()
-
         if self in self.metro.playing:
-
             self.metro.playing.remove(self)
-
         return
 
     def stop(self, N=0):
         """ Removes the player from the Tempo clock and changes its internal
             playing state to False in N bars time
             - When N is 0 it stops immediately"""
-
         self.stopping = True
         self.stop_point = self.metro.now()
-
         if N > 0:
-
             self.stop_point = self.metro.next_bar() + ((N-1) * self.metro.bar_length())
-
         else:
-
             self.kill()
-
         return self
 
     def pause(self):
-
         self.isplaying = False
-
         return self
 
     def play(self):
-
         self.isplaying = True
         self.stopping = False
         self.isAlive = True
-
         self.__call__()
-
         return self
 
     # Methods for collaborative performance
@@ -1652,35 +1592,23 @@ class Player(Repeatable):
 
     def accompany(self, other, values=[0, 2, 4], debug=False):
         """ Similar to "follow" but when the value has changed """
-
         if isinstance(other, self.__class__):
-
             self.degree = other.degree.accompany()
-
         return self
 
     def follow(self, other=False):
         """ Takes a Player object and then follows the notes """
-
         if isinstance(other, self.__class__):
-
             self.degree = other.degree
-
         return self
 
     def versus(self, other_key, rule=lambda x, y: x > y, attr=None):
         """ Sets the 'amplify' key for both players to be dependent on the comparison of keys """
-
         # Get reference to the second player object
-
         other = other_key.player
-
         # Get the attribute from the key to versus
-
         this_key = getattr(self, other_key.attr if attr is None else attr)
-
         # Set amplifications based on the rule
-
         self.amplify = this_key.transform(
             lambda value: rule(value, other_key.now()))
         other.amplify = this_key.transform(
