@@ -394,19 +394,19 @@ fx.add('env = EnvGen.ar(Env.new([0.01, 1, 1, 0.01], [elpa*sus, sus-(elpa*sus)-(e
 fx.add('osc = RLPF.ar(osc, LinLin.ar(env, 0, 1, 0, elpf)+10, elpr, mul: 1)')
 fx.load()
 
-fx = FxList.new('eqlow', 'eqlow', {'eqlow': 1, 'eqlowfreq': 80}, order=2)
+fx = FxList.new('eqlow', 'eqlow', {'eqlow': 0, 'eqlowfreq': 80}, order=2)
 fx.doc("Low shelf Equalizer")
 fx.add('osc = BLowShelf.ar(osc, freq: eqlowfreq, db: abs(eqlow).ampdb)')
 fx.load()
 
-fx = FxList.new('eqmid', 'eqmid', {'eqmid': 1,
+fx = FxList.new('eqmid', 'eqmid', {'eqmid': 0,
                                    'eqmidfreq': 1000,
                                    'eqmidq': 1}, order=2)
 fx.doc("Middle boost Equalizer")
 fx.add('osc = BPeakEQ.ar(osc, freq: eqmidfreq, rq: eqmidq.reciprocal, db: abs(eqmid).ampdb)')
 fx.load()
 
-fx = FxList.new('eqhigh', 'eqhigh', {'eqhigh': 1, 'eqhighfreq': 8000}, order=2)
+fx = FxList.new('eqhigh', 'eqhigh', {'eqhigh': 0, 'eqhighfreq': 8000}, order=2)
 fx.doc("High shelf Equalizer")
 fx.add('osc = BHiShelf.ar(osc, freq: eqhighfreq, db: abs(eqhigh).ampdb)')
 fx.load()
@@ -587,7 +587,7 @@ fx.add("right = HPF.ar(right,300)")
 fx.add("osc = osc + [left, right]")
 fx.load()
 
-fx = FxList.new('resonz', 'resonz', {'rfreq': 50, 'resonz': 0.1}, order=2)
+fx = FxList.new('resonz', 'resonz', {'resonz': 0, 'rfreq': 50}, order=2)
 fx.doc("Resonz")
 fx.add('osc = Resonz.ar(osc, freq: rfreq, bwr: resonz)')
 fx.load()

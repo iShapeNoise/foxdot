@@ -187,19 +187,22 @@ class EmptyPlayer(object):
 
 class Player(Repeatable):
     """
-    FoxDot generates music by creating instances of `Player` and giving them instructions
-    to follow. At startup FoxDot creates many instances of `Player` and assigns them to
-    any valid two character variable. This is so that when you start playing you don't
-    have to worry about typing `myPlayer = Player()` and `myPlayer_2 = Player()` every
-    time you want to do something new. Of course there is nothing stopping you from
-    doing that if yo so wish.
+    FoxDot generates music by creating instances of `Player` and giving them
+    instructions to follow. At startup FoxDot creates many instances of
+    `Player` and assigns them to any valid two character variable. This is so
+    that when you start playing you don't have to worry about typing
+    `myPlayer = Player()` and `myPlayer_2 = Player()` every time you want to do
+    something new. Of course there is nothing stopping you from doing that if
+    you so wish.
 
-    Instances of `Player` are given instructions to generate music using the `>>` syntax,
-    overriding the bitshift operator, and should be given an instance of `SynthDefProxy`.
-    A `SynthDefProxy` is created when calling an instance of `SynthDef` - these are the
-    "instruments" used by player objects and are written in SuperCollider code. You can
-    see more information about these in the `SCLang` module. Below describes how to assign
-    a `SynthDefProxy` of the `SynthDef` `pads` to a `Player` instance called `p1`: ::
+    Instances of `Player` are given instructions to generate music using the
+    `>>` syntax, overriding the bitshift operator, and should be given an
+    instance of `SynthDefProxy`.
+    A `SynthDefProxy` is created when calling an instance of `SynthDef` -
+    these are the "instruments" used by player objects and are written in
+    SuperCollider code. You can see more information about these in the
+    `SCLang` module. Below describes how to assign a `SynthDefProxy` of the
+    `SynthDef` `pads` to a `Player` instance called `p1`: ::
 
         # Calling pads as if it were a function returns a
         # pads SynthDefProxy object which is assigned to p1
@@ -214,14 +217,11 @@ class Player(Repeatable):
     """
 
     # Set private values
-
     debug = 0
-
     __vars = []
     __init = False
 
     # Really need to tidy this up
-
     keywords = ('degree', 'oct', 'freq', 'dur', 'delay', 'buf',
                 'blur', 'amplify', 'scale', 'bpm', 'sample', 'sdb', "env")
 
@@ -457,7 +457,6 @@ class Player(Repeatable):
                 # keep track of what values we change with +-
                 if (self.synthdef == SamplePlayer and name == "sample") or (name == "sdb") or (self.synthdef != SamplePlayer and name == "degree"):
                     self.modifier = value
-
                 # Update any playerkey
                 if name in self.__dict__:
                     if isinstance(self.__dict__[name], PlayerKey):
@@ -638,9 +637,10 @@ class Player(Repeatable):
         return
 
     def count(self, time=None, event_after=False):
-        """ Counts the number of events that will have taken place between 0 and `time`. If
-            `time` is not specified the function uses self.metro.now(). Setting `event_after`
-            to `True` will find the next event *after* `time`"""
+        """ Counts the number of events that will have taken place between 0
+            and `time`. It `time` is not specified the function uses
+            self.metro.now(). Setting `event_after` to `True` will find the
+            next event *after* `time`"""
 
         n = 0
         acc = 0
@@ -688,7 +688,9 @@ class Player(Repeatable):
         return n, acc
 
     def dur_updated(self):
-        """ Returns True if the players duration has changed since the last call """
+        """
+        Returns True if the players duration has changed since the last call
+        """
         self.current_dur = self.rhythm()
         if self.current_dur != self.old_dur:
             self.old_dur = self.current_dur
@@ -1410,6 +1412,8 @@ class Player(Repeatable):
             pos = kwargs.get("degree", event["degree"])
             sdb = kwargs.get("sdb", event["sdb"])
             buf = kwargs.get("buf", event["buf"])
+            if sdb != sdb:
+                print("Changed sdb in loop")
             # Get a user-specified tempo
             given_tempo = kwargs.get(
                 "tempo", self.event.get("tempo", self.metro.bpm))
@@ -1442,7 +1446,6 @@ class Player(Repeatable):
             # Updater player key
             if "freq" in self.accessed_keys:
                 self.freq = freq
-
             if "midinote" in self.accessed_keys:
                 self.midinote = midinote
         # Update the dict with other values from the event

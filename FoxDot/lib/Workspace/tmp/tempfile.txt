@@ -1,1 +1,3 @@
-m1 >> loop("foxdot", dur=4, sus=3/2, octer=3/4, )
+l1 >> loop("foxdot", sdb=1)
+
+b1 >> play("V", sdb=1)
