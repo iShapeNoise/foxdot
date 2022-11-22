@@ -1,1 +1,1 @@
-# PitchGlitch says hello x-D
+m1 >> loop("foxdot", dur=4, sus=3/2, octer=3/4, )

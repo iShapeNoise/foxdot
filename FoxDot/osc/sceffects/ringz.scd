@@ -1,4 +1,4 @@
-SynthDef.new(\ringmod, {
+SynthDef.new(\ringz, {
 	|bus, ringzfreq, ringz|
 	var osc;
 	osc = In.ar(bus, 2);

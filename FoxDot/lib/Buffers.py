@@ -456,13 +456,10 @@ class LoopSynthDef(SampleSynthDef):
         self.add()
 
     def __call__(self, filename, sdb=sdb, pos=0, sample=0, **kwargs):
-        kwargs["buf"] = Samples.loadBuffer(
-                                    join(FOXDOT_SND,
-                                         str(sdb),
-                                         FOXDOT_LOOP + filename),
-                                    sample)
+        kwargs["buf"] = Samples.loadBuffer(filename, sample)
         proxy = SampleSynthDef.__call__(self, pos, **kwargs)
         proxy.kwargs["filename"] = filename
+        print(filename)
         return proxy
 
 
@@ -476,15 +473,14 @@ class StretchSynthDef(SampleSynthDef):
         self.add()
 
     def __call__(self, filename, pos=0, sample=0, sdb=sdb, **kwargs):
-        kwargs["buf"] = Samples.loadBuffer(
-                                    join(FOXDOT_SND,
-                                         str(sdb),
-                                         FOXDOT_LOOP + filename),
-                                    sample)
+        kwargs["buf"] = Samples.loadBuffer(filename,sample)
         proxy = SampleSynthDef.__call__(self, pos, **kwargs)
         proxy.kwargs["filename"] = filename
         return proxy
 
+# join(FOXDOT_SND,
+#      str(sdb),
+#      FOXDOT_LOOP + filename)
 
 class GranularSynthDef(SampleSynthDef):
 

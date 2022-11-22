@@ -114,11 +114,14 @@
 
     amp - Amplitude (defaults to 1)
 
-    rate - Variable keyword used for misc. changes to a signal. E.g. Playback rate of the Sample Player (defaults to 1)
+    rate - Variable keyword used for misc. changes to a signal. E.g. Playback
+            rate of the Sample Player (defaults to 1)
 
-    delay - A duration of time to wait before sending the information to SuperCollider (defaults to 0)
+    delay - A duration of time to wait before sending the information to
+    SuperCollider (defaults to 0)
 
-    sample - Special keyword for Sample Players; selects another audio file from the bank of samples for a sample character.
+    sample - Special keyword for Sample Players; selects another audio file
+    from the bank of samples for a sample character.
 
 
 """
@@ -390,6 +393,7 @@ class Player(Repeatable):
         if isinstance(other, SynthDefProxy):
             # Call the update method
             self.update(other.name, other.degree, **other.kwargs)
+
             # self.update_pattern_root('sample' if self.synthdef == SamplePlayer else 'degree')
             for method, arguments in other.methods:
                 args, kwargs = arguments
@@ -398,7 +402,6 @@ class Player(Repeatable):
             # Add the modifier (check if not 0 to stop adding 0 to values)
             if (not isinstance(other.mod, (int, float))) or (other.mod != 0):
                 self + other.mod
-
             return self
 
         raise TypeError(
@@ -714,7 +717,6 @@ class Player(Repeatable):
         # If there is a designated solo player when updating,
         # add this at next bar
         if self.metro.solo.active() and self.metro.solo != self:
-
             self.metro.schedule(
                 lambda *args, **kwargs: self.metro.solo.add(self), self.metro.next_bar())
 
@@ -804,7 +806,6 @@ class Player(Repeatable):
         timestamp = self.get_timestamp(_beat_)
 
         # Get the current values (this might be called between events)
-
         n = int(kwargs.get("n", amount if amount is not None else 2))
         ahead = int(kwargs.get("ahead", 0))
 
@@ -813,7 +814,6 @@ class Player(Repeatable):
                 del kwargs[key]
 
         # Only send if n > 1 and the player is playing
-
         if self.metro.solo == self and n > 1:
             new_event = {}
             attributes = self.attr.copy()
@@ -1234,39 +1234,26 @@ class Player(Repeatable):
         except KeyError as e:
             print(attr, self.attr[attr], index)
             raise (e)
-
         except ZeroDivisionError as e:
-
             print(self, attr, self.attr[attr], index)
             raise (e)
 
         # Force and timevar etc into floats
-
         if attr_value is not None and (not isinstance(attr_value, (int, float))):
-
             attr_value = self.unpack(attr_value)
 
         return attr_value
 
     def get_prime_funcs(self, event):
         """ Finds and PGroupPrimes in event and returns the modulated event dictionary """
-
         prime_keys = ("degree", "sample")
-
         # Go through priority keys
-
         for key in prime_keys:
-
             self.apply_prime_funcs(event, key)
-
         # Then do the rest (skipping prime)
-
         for key in event:
-
             if key not in prime_keys:
-
                 self.apply_prime_funcs(event, key)
-
         return event
 
     @staticmethod
@@ -1281,73 +1268,45 @@ class Player(Repeatable):
         """ Converts values stored in event["dur"] in a tuple/PGroup into delays """
 
         # If there are more than one dur then add to the delay
-
         if "dur" in event:
-
             try:
-
                 if len(event['dur']) > 1:
-
                     init_dur = event["dur"][0]
-
                     offset = PGroup(0 | event['dur'][1:])
-
                     event["delay"] = event["delay"] + offset
-
                     event["dur"] = float(init_dur)
-
                 elif len(event['dur']) == 1:
-
                     event["dur"] = float(event["dur"][0])
-
             except TypeError:
-
                 pass
 
         if "sus" in event:
-
             try:
-
                 # Also update blur / sus
-
                 if len(event['sus']) > 1:
-
                     min_sus = min(event['sus']) if min(event['sus']) else 1
-
                     offset = PGroup([(sus / min_sus) for sus in event["sus"]])
-
                     event["blur"] = event["blur"] * offset
-
                     event["sus"] = float(min_sus)
-
                 elif len(event['sus']) == 1:
-
                     event["sus"] = float(event["sus"][0])
-
             except TypeError:
-
                 pass
-
         return event
 
     def get_event(self):
         """ Returns a dictionary of attr -> now values """
-
         self.event = dict(
             map(lambda attr: (attr, self.now(attr)), self.attr.keys()))
-
         self.event = self.unduplicate_durs(self.event)
-
         self.event = self.get_prime_funcs(self.event)
-
         # Update internal player keys / schedule future updates
-
         self.update_all_player_keys()
-
         return self
 
     def send(self, timestamp=None, verbose=True, **kwargs):
-        """ Goes through the  current event and compiles osc messages and sends to server via the tempo clock """
+        """ Goes through the  current event and compiles osc messages and
+            sends to server via the tempo clock """
 
         timestamp = timestamp if timestamp is not None else self.queue_block.time
 
@@ -1365,59 +1324,34 @@ class Player(Repeatable):
         return
 
     def send_osc_message(self, event, index, timestamp=None, verbose=True, **kwargs):
-        """ Compiles and sends an individual OSC message created by recursively unpacking nested PGroups """
-
+        """ Compiles and sends an individual OSC message created by recursively
+            unpacking nested PGroups """
         packet = {}
-
         event = event.copy()
         event.update(kwargs)
-
         for key, value in event.items():
-
-            # If we can index a value, trigger a new OSC message to send OSC messages for each
-
-            # value = kwargs.get(key, value)
-
+            # If we can index a value, trigger a new OSC message to send OSC
+            # messages for each value = kwargs.get(key, value)
             if isinstance(value, PGroup):
-
                 new_event = {}
-
                 for new_key, new_value in event.items():
-
                     # new_value = kwargs.get(new_key, new_value)
-
                     if isinstance(new_value, PGroup):
-
                         new_event[new_key] = new_value[index]
-
                     else:
-
                         new_event[new_key] = new_value
-
                 # Recursively unpack and send messages
-
                 for i in range(self.get_event_length(new_event)):
-
                     self.send_osc_message(new_event, i, timestamp, verbose)
-
                 return
-
             else:
-
                 # If it is a number, use the numbers (check for kwargs override)
-
                 packet[key] = value
-
         # Special case modulations
-
         if ("amp" in packet) and ("amplify" in packet):
-
             packet["amp"] = packet["amp"] * packet["amplify"]
-
         # Send compiled messages
-
         self.push_osc_to_server(packet, timestamp, verbose, **kwargs)
-
         return
 
     def push_osc_to_server(self, packet, timestamp, verbose=True, **kwargs):
@@ -1425,29 +1359,19 @@ class Player(Repeatable):
             amp/bufnum values meet criteria """
 
         # Do any calculations e.g. frequency
-
         message = self.new_message_header(packet, **kwargs)
 
         # Only send if amp > 0 etc
-
         if verbose and (message["amp"] > 0) and ((self.synthdef != SamplePlayer and message["freq"] != None) or (self.synthdef == SamplePlayer and message["buf"] > 0)):
-
             # Need to send delay and synthdef separately
-
             delay = self.metro.beat_dur(message.get("delay", 0))
-
             synthdef = self.get_synth_name(message.get(
                 "buf", 0))  # to send to play1 or play2
-
             compiled_msg = self.metro.server.get_bundle(
                 synthdef, message, timestamp=timestamp + delay)
-
             # We can set a condition to only send messages
-
             self.queue_block.append_osc_message(compiled_msg)
-
             # self.do_bang = True
-
         return
 
     def new_message_header(self, event, **kwargs):
@@ -1484,6 +1408,7 @@ class Player(Repeatable):
 
         elif self.synthdef == LoopPlayer:
             pos = kwargs.get("degree", event["degree"])
+            sdb = kwargs.get("sdb", event["sdb"])
             buf = kwargs.get("buf", event["buf"])
             # Get a user-specified tempo
             given_tempo = kwargs.get(
@@ -1503,12 +1428,11 @@ class Player(Repeatable):
             if rate < 0:
                 sus = kwargs.get("sus", event["sus"])
                 pos += self.metro.beat_dur(sus)
-            message.update({'pos': pos, 'buf': buf, 'rate': rate})
+            message.update({'pos': pos, 'buf': buf, 'rate': rate, 'sdb': sdb})
         else:
             degree = kwargs.get("degree", event["degree"])
             octave = kwargs.get("oct", event["oct"])
             root = kwargs.get("root", event["root"])
-            sdb = kwargs.get("sdb", event["sdb"])
             scale = kwargs.get("scale", self.scale)
             if degree is None:
                 freq, midinote = None, None
@@ -1520,7 +1444,7 @@ class Player(Repeatable):
                 self.freq = freq
 
             if "midinote" in self.accessed_keys:
-               self.midinote = midinote
+                self.midinote = midinote
         # Update the dict with other values from the event
         event.update(message)
         # Remove keys we dont need
@@ -1534,9 +1458,9 @@ class Player(Repeatable):
         return
 
     def get_synth_name(self, buf=0):
-        """ Returns the real SynthDef name of the player. Useful only for "play"
-            as there is a play1 and play2 SynthDef for playing audio files with
-            one or two channels respectively. """
+        """ Returns the real SynthDef name of the player. Useful only for
+            "play" as there is a play1 and play2 SynthDef for playing audio
+            files with one or two channels respectively. """
         if self.synthdef == SamplePlayer:
             numChannels = self.samples.getBuffer(buf).channels
             if numChannels == 1:
@@ -1603,7 +1527,8 @@ class Player(Repeatable):
         return self
 
     def versus(self, other_key, rule=lambda x, y: x > y, attr=None):
-        """ Sets the 'amplify' key for both players to be dependent on the comparison of keys """
+        """ Sets the 'amplify' key for both players to be dependent on
+            the comparison of keys """
         # Get reference to the second player object
         other = other_key.player
         # Get the attribute from the key to versus
@@ -1613,16 +1538,12 @@ class Player(Repeatable):
             lambda value: rule(value, other_key.now()))
         other.amplify = this_key.transform(
             lambda value: not rule(value, other_key.now()))
-
         return self
 
     def reload(self):
         """ If this is a 'play' or 'loop' SynthDef, reload the filename used"""
-
         if self.synthdef == LoopPlayer:
-
             Samples.reload(self.filename)
-
         return self
 
     def only(self):
@@ -1635,7 +1556,6 @@ class Player(Repeatable):
     def solo(self, action=1):
         """ Silences all players except this player. Undo the solo
             by using `Player.solo(0)` """
-
         action = int(action)
 
         if action == 0:

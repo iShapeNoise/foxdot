@@ -1,7 +1,6 @@
-SynthDef.new(\glide, {
-	|bus, glide, glidedelay, sus|
-	var osc;
-	osc = In.kr(bus, 1);
-	osc = osc * EnvGen.ar(Env([1, 1, (1.059463**glide)], [sus*glidedelay, sus*(1-glidedelay)]));
-	ReplaceOut.kr(bus, osc)
-}).add;
+SynthDef.new(\glide,
+{|bus, glide, glidedur|
+var osc;
+osc = In.kr(bus, 1);
+osc = Line.kr(start: (osc * glide).clip(-50,22000), end: osc, dur: glidedur);
+ReplaceOut.kr(bus, osc)}).add;

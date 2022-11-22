@@ -129,7 +129,7 @@ class Effect:
             self.vars.append(name)
         return
 
-    def save(self):
+    def load(self):
         ''' writes to file and sends to server '''
 
         # 1. See if the file exists
@@ -161,7 +161,7 @@ class Effect:
 class In(Effect):
     def __init__(self):
         Effect.__init__(self, 'startSound', 'startSound')
-        self.save()
+        self.load()
 
     def __str__(self):
         s = "SynthDef.new(\startSound,\n"
@@ -174,7 +174,7 @@ class Out(Effect):
     def __init__(self):
         self.max_duration = 8
         Effect.__init__(self, 'makeSound', 'makeSound')
-        self.save()
+        self.load()
 
     def __str__(self):
         s = "SynthDef.new(\makeSound,\n"
@@ -266,6 +266,7 @@ FxList = EffectManager()
 Effects = FxList  # Alias - to become default
 
 # Frequency Effects, Signal Effects, Post-envelope Effects
+# Credits to CrashSever team
 
 fx = FxList.new("bend",
                 "bend",
@@ -284,14 +285,19 @@ fx.add("bpr = LFNoise1.kr(bpnoise).exprange(bpr * 0.5, bpr * 2)")
 fx.add("osc = BPF.ar(osc, bpf, bpr)")
 fx.load()
 
-fx = FxList.new('chop', 'chop', {'chop': 0, 'sus': 1}, order=2)
-fx.add("osc = osc * LFPulse.kr(chop / sus, add: 0.01)")
+fx = FxList.new('chop', 'chop', {'chop': 0,
+                                 'sus': 1,
+                                 'chopmix': 1,
+                                 'chopwave': 0,
+                                 'chopi': 0}, order=2)
+fx.add("osc = LinXFade2.ar(osc * SelectX.kr(chopwave, [LFPulse.kr(chop / sus, iphase:chopi, add: 0.01), LFTri.kr(chop / sus, iphase:chopi, add: 0.01), LFSaw.kr(chop / sus, iphase:chopi, add: 0.01), FSinOsc.kr(chop / sus, iphase:chopi, add: 0.01), LFPar.kr(chop / sus, iphase:chopi, add: 0.01)]), osc, 1-chopmix)")
 fx.load()
 
 fx = FxList.new('chorus',
                 'chorus',
-                {'chorus': 0, 'chorusrate': 1, 'numDelays': 4},
+                {'chorus': 0, 'chorusrate': 0.5, 'numDelays': 4},
                 order=2)
+fx.doc("Derek Kwan chorus")
 fx.add_var("lfos")
 fx.add_var("chrate")
 fx.add_var("maxDelayTime")
@@ -311,25 +317,108 @@ fx.load()
 
 fx = FxList.new("comp", "comp", {"comp": 0,
                                  "comp_down": 1,
-                                 "comp_up": 1}, order=0)
-fx.add("osc = Compander.ar(osc, osc, thresh: comp, slopeAbove: comp_down, slopeBelow: comp_up, clampTime: 0.01, relaxTime: 0.01, mul: 1);")
+                                 "comp_up": 0.8}, order=2)
+fx.add("osc = Compander.ar(osc, osc, thresh: comp, slopeAbove: comp_down, slopeBelow: comp_up, clampTime: 0.01, relaxTime: 0.01, mul: 1)")
 fx.load()
 
 fx = FxList.new("cut", "cut", {"cut": 0, "sus": 1}, order=2)
 fx.add("osc = osc * EnvGen.ar(Env(levels: [1,1,0.01], curve: 'step', times: [sus * cut, 0.01]))")
 fx.load()
 
-fx = FxList.new("drive", "drive", {"drive": 0}, order=2)
-fx.add("osc = (osc * (drive * 50)).clip(0,0.2).fold2(2)")
+fx = FxList.new('dfm', 'dfm', {'dfm': 1000, 'dfmr': 0.1, 'dfmd': 1}, order=2)
+fx.doc("DFM1 low pass filter")
+fx.add('osc = DFM1.ar(osc, dfm, dfmr, dfmd,0.0)')
+fx.load()
+
+fx = FxList.new("dist2", "dist2", {"dist2": 0,
+                                   "dist2mix": 1,
+                                   "dist2shape": 0.1}, order=2)
+fx.add_var("tmp")
+fx.add("tmp = Fold.ar(osc, -1*dist2shape, dist2shape)")
+fx.add("tmp = (tmp * 16.dbamp * dist2).tanh")
+fx.add("tmp = BHiShelf.ar(tmp, 9000, 0.8, -12)")
+fx.add("tmp = LPF.ar(tmp, 9000)")
+fx.add("osc = LinXFade2.ar(tmp, osc, 1-dist2mix)")
+fx.load()
+
+fx = FxList.new('djf', 'djf', {'djf': 0, 'djfq': 0.3}, order=2)
+fx.doc("DJ Filter")
+fx.add_var('lpfCutoffFreq')
+fx.add_var('hpfCutoffFreq')
+fx.add('lpfCutoffFreq = djf.linexp(0, 0.5, 50, 15000)')
+fx.add('hpfCutoffFreq = djf.linexp(0.5, 1, 50, 15000)')
+fx.add('osc = RHPF.ar(RLPF.ar(osc,lpfCutoffFreq, djfq),hpfCutoffFreq, djfq)')
+fx.load()
+
+fx = FxList.new("drive", "drive", {"drive": 0, "drivemix": 1}, order=2)
+fx.add("osc = LinXFade2.ar((osc * (drive * 50)).clip(0,0.2).fold2(2), osc, 1-drivemix)")
+fx.load()
+
+fx = FxList.new("drop", "drop", {"drop": 0, "dropof": 100}, order=2)
+fx.doc("Tidal Effect: Waveloss disto")
+fx.add("osc = WaveLoss.ar(osc, drop, outof: dropof, mode: 2)")
+fx.load()
+
+fx = FxList.new("easr", "easr", {"a": 0,
+                                 "s": 1,
+                                 "r": 1,
+                                 "ac": 0,
+                                 "rc": 0}, order=2)
+fx.doc("Envelope: Attack/Sustain/Release with ac and rc as curve arguments")
+fx.add_var("env")
+fx.add("env = EnvGen.ar(Env.new(levels: [0,1,1,0], times:[a*sus, max((a*sus + r*sus), sus - (a*sus + r*sus)), r*sus], curve:[ac,0,rc]))")
+fx.add("osc = osc * env")
+fx.load()
+
+fx = FxList.new('ehpf', 'ehpf', {'ehpf': 0,
+                                 'ehpr': 0.7,
+                                 'ehpa': 0.001,
+                                 'ehps': 0.01,
+                                 'ehpc': -3,
+                                 'sus': 1}, order=2)
+fx.doc("Envelope: High pass filter")
+fx.add_var("env")
+fx.add('env = EnvGen.ar(Env.new([0, 1, 1, 0.1], [ehpa*sus, sus-(ehpa*sus)-(ehps*sus), ehps], ehpc))')
+fx.add('osc = RHPF.ar(osc, ehpf, ehpr, mul: env)')
+fx.load()
+
+fx = FxList.new('elpf', 'elpf', {'elpf': 0,
+                                 'elpr': 0.7,
+                                 'elpa': 0.001,
+                                 'elps': 0.01,
+                                 'elpc': -3,
+                                 'sus': 1}, order=2)
+fx.doc("Envelope: Low pass filter")
+fx.add_var("env")
+fx.add('env = EnvGen.ar(Env.new([0.01, 1, 1, 0.01], [elpa*sus, sus-(elpa*sus)-(elps*sus), elps], elpc), doneAction:0)')
+fx.add('osc = RLPF.ar(osc, LinLin.ar(env, 0, 1, 0, elpf)+10, elpr, mul: 1)')
+fx.load()
+
+fx = FxList.new('eqlow', 'eqlow', {'eqlow': 1, 'eqlowfreq': 80}, order=2)
+fx.doc("Low shelf Equalizer")
+fx.add('osc = BLowShelf.ar(osc, freq: eqlowfreq, db: abs(eqlow).ampdb)')
+fx.load()
+
+fx = FxList.new('eqmid', 'eqmid', {'eqmid': 1,
+                                   'eqmidfreq': 1000,
+                                   'eqmidq': 1}, order=2)
+fx.doc("Middle boost Equalizer")
+fx.add('osc = BPeakEQ.ar(osc, freq: eqmidfreq, rq: eqmidq.reciprocal, db: abs(eqmid).ampdb)')
+fx.load()
+
+fx = FxList.new('eqhigh', 'eqhigh', {'eqhigh': 1, 'eqhighfreq': 8000}, order=2)
+fx.doc("High shelf Equalizer")
+fx.add('osc = BHiShelf.ar(osc, freq: eqhighfreq, db: abs(eqhigh).ampdb)')
 fx.load()
 
 fx = FxList.new('echo', 'echo', {'echo': 0,
+                                 'echomix': 1,
                                  'beat_dur': 1,
                                  'echotime': 1}, order=2)
-fx.add('osc = osc + CombL.ar(osc, delaytime: echo * beat_dur, maxdelaytime: 2 * beat_dur, decaytime: echotime * beat_dur)')
+fx.add('osc = LinXFade2.ar(osc + CombL.ar(osc, delaytime: echo * beat_dur, maxdelaytime: 2 * beat_dur, decaytime: echotime * beat_dur), osc, 1-echomix)')
 fx.load()
 
-fx = FxList.new('fdist', 'fdist', {'fdist': 0, 'fdisfreq': 0}, order=1)
+fx = FxList.new('fdist', 'fdist', {'fdist': 0, 'fdisfreq': 1600}, order=1)
 fx.add("osc = LPF.ar(osc, fdistfreq)")
 fx.add("osc = (osc * 1.1 * fdist).tanh")
 fx.add("osc = LPF.ar(osc, fdistfreq)")
@@ -365,15 +454,21 @@ fx.add("osc = RLPF.ar(osc, fdistcfreq4, fdistcq4)")
 fx.add("osc = (osc * fdistcm4 * fdistc).tanh")
 fx.load()
 
-fx = FxList.new("formant", "formant", {"formant": 0}, order=2)
-fx.add("formant = (formant % 8) + 1")
-fx.add("osc = Formlet.ar(osc, formant * 200, ((formant % 5 + 1)) / 1000, (formant * 1.5) / 600).tanh")
+fx = FxList.new('flanger', 'flanger', {'flanger': 0,
+                                       'fdecay': 0,
+                                       'flangermix': 1}, order=2)
+fx.add("osc = LinXFade2.ar(CombC.ar(osc, 0.01, SinOsc.ar(flanger, 0, (0.01 * 0.5) - 0.001, (0.01 * 0.5) + 0.001), fdecay, 1),  osc, 1-flangermix)")
 fx.load()
 
-fx = FxList.new("glide", "glide", {"glide": 0,
-                                   "glidedelay": 0.5,
-                                   "sus": 1}, order=0)
-fx.add("osc = osc * EnvGen.ar(Env([1, 1, (1.059463**glide)], [sus*glidedelay, sus*(1-glidedelay)]))")
+fx = FxList.new("formant", "formant", {"formant": 0,
+                                       "formantmix": 1}, order=2)
+fx.add("formant = (formant % 8) + 1")
+fx.add("osc = LinXFade2.ar(Formlet.ar(osc, formant * 200, ((formant % 5 + 1)) / 1000, (formant * 1.5) / 600).tanh, osc, 1-formantmix)")
+fx.load()
+
+fx = FxList.new("glide", "glide", {"glide": 0, "glidedur": 0.05}, order=0)
+fx.doc("Glide mode")
+fx.add("osc = Line.kr(start: (osc * glide).clip(-50,22000), end: osc, dur: glidedur)")
 fx.load()
 
 fx = FxList.new('hpf', 'hpf', {'hpf': 0, 'hpr': 1}, order=2)
@@ -381,7 +476,8 @@ fx.doc("Highpass filter")
 fx.add('osc = RHPF.ar(osc, hpf, hpr)')
 fx.load()
 
-fx = FxList.new('krush', 'krush', {'krush': 0, 'kutoff': 0}, order=2)
+fx = FxList.new('krush', 'krush', {'krush': 0, 'kutoff': 15000}, order=2)
+fx.doc("Tidal Effect: Distortion")
 fx.add_var("signal")
 fx.add_var("freq")
 fx.add("freq = Select.kr(kutoff > 0, [DC.kr(4000), kutoff])")
@@ -391,6 +487,7 @@ fx.add("osc = SelectX.ar(krush * 2.0, [osc, signal])")
 fx.load()
 
 fx = FxList.new('leg', 'leg', {'leg': 0, 'sus': 1}, order=0)
+fx.doc("Legato slide")
 fx.add("osc = osc * XLine.ar(Rand(0.5,1.5)*leg,1,0.05*sus)")
 fx.load()
 
@@ -431,8 +528,36 @@ fx = FxList.new('lpf', 'lpf', {'lpf': 0, 'lpr': 1}, order=2)
 fx.add('osc = RLPF.ar(osc, lpf, lpr)')
 fx.load()
 
-fx = FxList.new('mpf', 'mpf', {'mpf': 0, 'mpr': 1}, order=2)
-fx.add("osc = MoogFF.ar(osc, mpf, mpr,0,1)")
+fx = FxList.new('mpf', 'mpf', {'mpf': 0, 'mpr': 0}, order=2)
+fx.add("osc = MoogFF.ar(osc, mpf, mpr, 0, 1)")
+fx.load()
+
+fx = FxList.new('octafuz', 'octafuz', {'octafuz': 0, 'octamix': 1}, order=2)
+fx.doc("Octafuz Distortion")
+fx.add_var("dis")
+fx.add_var("osc_base")
+fx.add("osc_base = osc")
+fx.add("dis = [1,1.01,2,2.02,4.5,6.01,7.501]")
+fx.add("dis = dis ++ (dis*6)")
+fx.add("osc = ((osc * dis*octafuz).sum.distort)")
+fx.add("osc = (osc * 1/16)!2")
+fx.add("osc = LinXFade2.ar(osc_base, osc, octamix)")
+fx.load()
+
+fx = FxList.new("octer", "octer", {"octer": 0,
+                                   "octersub": 0,
+                                   "octersubsub": 0
+                                   }, order=1)
+fx.add_var("oct1")
+fx.add_var("oct2")
+fx.add_var("oct3")
+fx.add_var("sub")
+fx.add("oct1 = 2.0 * LeakDC.ar(abs(osc))")
+fx.add("sub = LPF.ar(osc, 440)")
+fx.add("oct2 = ToggleFF.ar(sub)")
+fx.add("oct3 = ToggleFF.ar(oct2)")
+fx.add("osc = SelectX.ar(octer, [osc, octer*oct1, DC.ar(0)])")
+fx.add("osc = osc + (octersub * oct2 * sub) + (octersubsub * oct3 * sub)")
 fx.load()
 
 fx = FxList.new('output', 'output', {'output': 0}, order=2)
@@ -447,11 +572,41 @@ fx.add("for(1, 4, {|i| delayedSignal = AllpassL.ar(delayedSignal, 0.01 * 4.recip
 fx.add("osc = osc + delayedSignal")
 fx.load()
 
+fx = FxList.new('pong', 'pong', {'pong': 0, 'beat_dur': 1, 'pongtime': 1}, order=2)
+fx.doc("Ping pong delay")
+fx.add_var("left")
+fx.add_var("right")
+fx.add("left = CombN.ar(osc, delaytime: pong * beat_dur, maxdelaytime: 2 * beat_dur, decaytime: pongtime * beat_dur)")
+fx.add("left = left*2.distort.tanh")
+fx.add("left = LPF.ar(left, 12000)")
+fx.add("left = HPF.ar(left, 300)")
+fx.add("right = CombN.ar(osc, delaytime: pong * beat_dur + pong * beat_dur*0.5, maxdelaytime: 2 * beat_dur, decaytime: pongtime * beat_dur)")
+fx.add("right = right*2.distort.tanh")
+fx.add("right = LPF.ar(right,12000)")
+fx.add("right = HPF.ar(right,300)")
+fx.add("osc = osc + [left, right]")
+fx.load()
+
+fx = FxList.new('resonz', 'resonz', {'rfreq': 50, 'resonz': 0.1}, order=2)
+fx.doc("Resonz")
+fx.add('osc = Resonz.ar(osc, freq: rfreq, bwr: resonz)')
+fx.load()
+
 fx = FxList.new("pshift", "pshift", {"pshift": 0}, order=0)
 fx.add("osc = osc * (1.059463**pshift)")
 fx.load()
 
-fx = FxList.new('ringmod', 'ringmod', {'ringzfreq': 0, 'ringz': 0}, order=2)
+fx = FxList.new("ring", "ring", {"ring": 0,
+                                 "ringl": 500,
+                                 "ringh": 1500}, order=0)
+fx.doc("Ring Modulator")
+fx.add_var("mod")
+fx.add("mod = ring * SinOsc.ar(Clip.kr(XLine.kr(ringl, ringl + ringh), 20, 20000))")
+fx.add("osc = ring1(osc, mod)")
+fx.load()
+
+fx = FxList.new('ringz', 'ringz', {'ringzfreq': 0, 'ringz': 0}, order=2)
+fx.doc("Z of Ringmodulation")
 fx.add("Ringz.ar(osc, freq: ringzfreq, decaytime: ringz, mul: 0.05)")
 fx.load()
 
@@ -460,9 +615,9 @@ fx.add("osc = FreeVerb.ar(osc, mix, room)")
 fx.load()
 
 fx = FxList.new('room2', 'room2', {'room2': 0,
-                                   'mix2': 0.1,
-                                   'damp2': 0.5,
-                                   'revatk': 0.5,
+                                   'mix2': 0.2,
+                                   'damp2': 0.8,
+                                   'revatk': 0,
                                    'revsus': 1}, order=2)
 fx.add_var("dry")
 fx.add("dry = osc")
@@ -480,8 +635,13 @@ fx.add("env = EnvGen.ar(Env.new(levels: [0,1,0], times:[sample_atk, sample_sus],
 fx.add("osc = osc*env")
 fx.load()
 
-fx = FxList.new("shape", "shape", {"shape": 0}, order=2)
-fx.add("osc = (osc * (shape * 50)).fold2(1).distort / 5")
+fx = FxList.new("shape", "shape", {"shape": 0, "shapemix": 1}, order=2)
+fx.add("osc = LinXFade2.ar((osc * (shape * 50)).fold2(1).distort / 5, osc, 1-shapemix)")
+fx.load()
+
+fx = FxList.new("shift", "shift", {"shift": 0, "shiftsize": 0.1}, order=1)
+fx.doc("Pitch Shifter")
+fx.add("osc = PitchShift.ar(osc, shiftsize, shift, 0.02, 0.01)")
 fx.load()
 
 fx = FxList.new("slide", "slide", {"slide": 0,
@@ -499,10 +659,11 @@ fx.load()
 fx = FxList.new('spf', 'spf', {'spf': 0,
                                'spr': 1,
                                'spfslide': 1,
-                               'spfend': 1}, order=2)
+                               'spfend': 15000}, order=2)
+fx.doc("Lpf slide")
 fx.add_var("spfenv")
 fx.add("spfenv = EnvGen.ar(Env.new([spf, spfend], [spfslide]))")
-fx.add("osc = RLPF.ar(osc, spfenv, spr")
+fx.add("osc = RLPF.ar(osc, spfenv, spr)")
 fx.load()
 
 fx = FxList.new('spin', 'spin', {'spin': 0, 'sus': 1}, order=2)
@@ -510,7 +671,7 @@ fx.add('osc = osc * [FSinOsc.ar(spin / 2, iphase: 1, mul: 0.5, add: 0.5), FSinOs
 fx.load()
 
 fx = FxList.new('squiz', 'squiz', {'squiz': 0}, order=2)
-fx.add_var("squiz")
+fx.doc("Tidal Effect: Squiz Disto")
 fx.add("osc = Squiz.ar(osc, squiz)")
 fx.load()
 
@@ -527,21 +688,25 @@ fx = FxList.new('swell', 'swell', {'swell': 0, 'sus': 1, 'hpr': 1}, order=2)
 fx.add_var("env")
 fx.add("env = EnvGen.kr(Env([0,1,0], times:[(sus*0.25), (sus*0.25)], curve:\\sin))")
 fx.add('osc = RHPF.ar(osc, env * swell * 2000, hpr)')
-fx.save()
+fx.load()
 
 fx = FxList.new('tanh', 'tanh', {'tanh': 0}, order=2)
 fx.add("osc = osc + (osc*tanh).tanh.sqrt()")
 fx.load()
 
-fx = FxList.new('tremolo', 'tremolo', {'tremolo': 0, 'beat_dur': 1}, order=2)
-fx.add("osc = osc * SinOsc.ar( tremolo / beat_dur, mul:0.5, add:0.5)")
-fx.save()
+fx = FxList.new('tremolo', 'tremolo', {'tremolo': 0,
+                                       'beat_dur': 1,
+                                       'temolomix': 1}, order=2)
+fx.add("osc = LinXFade2.ar(osc * SinOsc.ar(tremolo / beat_dur, mul: 0.5, add: 0.5), osc, 1-tremolomix)")
+fx.load()
 
-fx = FxList.new('trim', 'trim', {'position': 0, 'sus': 1}, order=2)
-fx.add("osc = osc * EnvGen.ar(Env([0, 0, 1], curve: 'step', times: [sus * position, 0]))")
+fx = FxList.new('trim', 'trim', {'trim': 0, 'sus': 1}, order=2)
+fx.doc("Trimmer of sound from trim as position (old position) and sustain")
+fx.add("osc = osc * EnvGen.ar(Env(levels: [0,0,1], curve: 'step', times: [sus * trim, 0]))")
 fx.load()
 
 fx = FxList.new('triode', 'triode', {'triode': 0}, order=2)
+fx.doc("Tidal Effect: Triode Disto")
 fx.add_var("sc")
 fx.add("sc = triode * 10 + 1e-3")
 fx.add("osc = (osc * (osc > 0)) + (tanh(osc * sc) / sc * (osc < 0))")
@@ -550,6 +715,11 @@ fx.load()
 
 fx = FxList.new("vib", "vibrato", {"vib": 0, "vibdepth": 0.02}, order=0)
 fx.add("osc = Vibrato.ar(osc, vib, depth: vibdepth)")
+fx.load()
+
+fx = FxList.new('vol', 'vol', {'vol': 1}, order=2)
+fx.doc("Simple Volume Control")
+fx.add("osc = osc * vol")
 fx.load()
 
 if SC3_PLUGINS:
@@ -568,6 +738,8 @@ if SC3_PLUGINS:
     fx.add("osc = (osc.cubed * 8).softclip * 0.5")
     fx.add("osc = SelectX.ar(dist, [tmp, osc])")
     fx.load()
+
+
 
 In()
 Out()

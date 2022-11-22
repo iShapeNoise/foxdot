@@ -705,11 +705,11 @@ class workspace:
         return bool(self.filename)
 
     # Open a file: Ctrl+o
-    #--------------------
+    # --------------------
 
     def openfile(self, event=None):
         path = tkFileDialog.askopenfilename()
-        if path != "":
+        if len(path) > 0:
             f = open(path)
             text = f.read()
             f.close()
