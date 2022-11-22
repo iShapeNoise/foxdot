@@ -739,8 +739,6 @@ if SC3_PLUGINS:
     fx.add("osc = SelectX.ar(dist, [tmp, osc])")
     fx.load()
 
-
-
 In()
 Out()
 Effect.server.setFx(FxList)
