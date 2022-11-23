@@ -1,5 +1,5 @@
 SynthDef.new(\formant, {
-	|bus, formant|
+	|bus, formant, formantmix|
 	var osc;
 	osc = In.ar(bus, 2);
 	formant = (formant % 8) + 1;

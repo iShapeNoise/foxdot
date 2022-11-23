@@ -285,23 +285,33 @@ fx.add("bpr = LFNoise1.kr(bpnoise).exprange(bpr * 0.5, bpr * 2)")
 fx.add("osc = BPF.ar(osc, bpf, bpr)")
 fx.load()
 
-fx = FxList.new('chop', 'chop', {'chop': 0,
-                                 'sus': 1,
-                                 'chopmix': 1,
-                                 'chopwave': 0,
-                                 'chopi': 0}, order=2)
-fx.add("osc = LinXFade2.ar(osc * SelectX.kr(chopwave, [LFPulse.kr(chop / sus, iphase:chopi, add: 0.01), LFTri.kr(chop / sus, iphase:chopi, add: 0.01), LFSaw.kr(chop / sus, iphase:chopi, add: 0.01), FSinOsc.kr(chop / sus, iphase:chopi, add: 0.01), LFPar.kr(chop / sus, iphase:chopi, add: 0.01)]), osc, 1-chopmix)")
+fx = FxList.new("chop",
+                "chop",
+                {"chop": 0, "sus": 1, "benddelay": 0},
+                order=2)
+fx.doc("Chop effect")
+fx.add("osc = osc * LFPulse.kr(chop / sus, add: 0.01)")
+fx.load()
+
+fx = FxList.new('chop2', 'chop2', {'chop2': 0,
+                                   'sus': 1,
+                                   'chopmix': 1,
+                                   'chopwave': 0,
+                                   'chopi': 0}, order=2)
+fx.add("osc = LinXFade2.ar(osc * SelectX.kr(chopwave, [LFPulse.kr(chop2 / sus, iphase: chopi, add: 0.01), LFTri.kr(chop2 / sus, iphase:chopi, add: 0.01), LFSaw.kr(chop2 / sus, iphase:chopi, add: 0.01), FSinOsc.kr(chop2 / sus, iphase:chopi, add: 0.01), LFPar.kr(chop2 / sus, iphase:chopi, add: 0.01)]), osc, 1-chopmix)")
 fx.load()
 
 fx = FxList.new('chorus',
                 'chorus',
-                {'chorus': 0, 'chorusrate': 0.5, 'numDelays': 4},
+                {'chorus': 0, 'chorusrate': 0.5},
                 order=2)
 fx.doc("Derek Kwan chorus")
 fx.add_var("lfos")
 fx.add_var("chrate")
 fx.add_var("maxDelayTime")
 fx.add_var("minDelayTime")
+fx.add_var("numDelays")
+fx.add("numDelays = 4")
 fx.add("chrate = Select.kr(chorusrate > 0.5, [LinExp.kr(chorusrate, 0.0, 0.5, 0.025, 0.125), LinExp.kr(chorusrate, 0.5, 1.0, 0.125, 2)])")
 fx.add("maxDelayTime = LinLin.kr(chorus, 0.0, 1.0, 0.016, 0.052)")
 fx.add("minDelayTime = LinLin.kr(chorus, 0.0, 1.0, 0.012, 0.022)")
@@ -366,7 +376,7 @@ fx = FxList.new("easr", "easr", {"a": 0,
                                  "rc": 0}, order=2)
 fx.doc("Envelope: Attack/Sustain/Release with ac and rc as curve arguments")
 fx.add_var("env")
-fx.add("env = EnvGen.ar(Env.new(levels: [0,1,1,0], times:[a*sus, max((a*sus + r*sus), sus - (a*sus + r*sus)), r*sus], curve:[ac,0,rc]))")
+fx.add("env = EnvGen.ar(Env.new(levels: [0,1,1,0], times:[a*s, max((a*s + r*s), s - (a*s + r*s)), r*s], curve:[ac,0,rc]))")
 fx.add("osc = osc * env")
 fx.load()
 
@@ -713,7 +723,7 @@ fx.add("osc = (osc * (osc > 0)) + (tanh(osc * sc) / sc * (osc < 0))")
 fx.add("osc = LeakDC.ar(osc) * 1.2")
 fx.load()
 
-fx = FxList.new("vib", "vibrato", {"vib": 0, "vibdepth": 0.02}, order=0)
+fx = FxList.new("vib", "vib", {"vib": 0, "vibdepth": 0.02}, order=0)
 fx.add("osc = Vibrato.ar(osc, vib, depth: vibdepth)")
 fx.load()
 

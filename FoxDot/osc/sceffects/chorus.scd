@@ -1,8 +1,9 @@
 SynthDef.new(\chorus, {
-	|bus, chorus, chorusrate, numDelays|
-	var osc, lfos, chrate, maxDelayTime, minDelayTime;
+	|bus, chorus, chorusrate|
+	var osc, lfos, chrate, maxDelayTime, minDelayTime, numDelays;
+	numDelays = 4;
 	osc = In.ar(bus, 2);
-	chrate = Select.kr(chorusrate > 0.5, [LinExp.kr(chorusrate, 0.0, 0.5, 0.025, 0.125),LinExp.kr(chorusrate, 0.5, 1.0, 0.125, 2)]);
+	chrate = Select.kr(chorusrate > 0.5, [LinExp.kr(chorusrate, 0.0, 0.5, 0.025, 0.125), LinExp.kr(chorusrate, 0.5, 1.0, 0.125, 2)]);
 	maxDelayTime = LinLin.kr(chorus, 0.0, 1.0, 0.016, 0.052);
 	minDelayTime = LinLin.kr(chorus, 0.0, 1.0, 0.012, 0.022);
 	osc = osc * numDelays.reciprocal;

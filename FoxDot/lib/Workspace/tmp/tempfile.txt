@@ -1,3 +1,0 @@
-l1 >> loop("foxdot", sdb=1)
-
-b1 >> play("V", sdb=1)

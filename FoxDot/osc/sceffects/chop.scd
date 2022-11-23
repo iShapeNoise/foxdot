@@ -1,7 +1,7 @@
 SynthDef.new(\chop, {
-	|bus, chop, sus, chopmix, chopwave, chopi|
+	|bus, chop, sus|
 	var osc;
 	osc = In.ar(bus, 2);
-	osc = LinXFade2.ar(osc * SelectX.kr(chopwave, [LFPulse.kr(chop / sus, iphase:chopi, add: 0.01), LFTri.kr(chop / sus, iphase:chopi, add: 0.01), LFSaw.kr(chop / sus, iphase:chopi, add: 0.01), FSinOsc.kr(chop / sus, iphase:chopi, add: 0.01), LFPar.kr(chop / sus, iphase:chopi, add: 0.01)]), osc, 1-chopmix);
-	ReplaceOut.ar(bus, osc)
-}).add;
+	osc = osc * LFPulse.kr(chop / sus, add: 0.01);
+	ReplaceOut.ar(bus, osc)}
+).add;
