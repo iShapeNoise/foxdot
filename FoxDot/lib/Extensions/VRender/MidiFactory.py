@@ -1,8 +1,6 @@
 from midiutil import MIDIFile
 
 def createMidi(midi_file, composition):
-    print("Composition:")
-    print(composition)
 
     MyMIDI = MIDIFile(1)
 

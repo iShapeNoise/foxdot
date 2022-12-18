@@ -42,12 +42,22 @@ def toList(rhythm, melody, scale):
     return composition
 
 def compose(notes,durations,scale, new_midi_path, new_musicxml_path):
-
-    print(notes)
-    print(durations)
-    print(scale)
+    print('notes: ', notes)
+    print('durations: ', durations)
+    print('scale: ', scale)
 
     composition = toList(durations,notes,scale)
-    print(composition)
+    print("Composition: ", composition)
     createMidi(new_midi_path, composition)
-    os.system("musescore "+ new_midi_path +" -o " + new_musicxml_path)
+
+    # uses MuseCore to onvert midi file to musicXML file
+    from sys import platform
+    # linux
+    if platform == "linux" or platform == "linux2":
+        os.system("musescore "+ new_midi_path +" -o " + new_musicxml_path)
+    # OS X
+    elif platform == "darwin":
+        os.system("/Applications/MuseScore\ 3.app/Contents/MacOS/mscore "+ new_midi_path +" -o " + new_musicxml_path)
+    # Windows...
+    elif platform == "win32":
+        os.system("musescore "+ new_midi_path +" -o " + new_musicxml_path)
