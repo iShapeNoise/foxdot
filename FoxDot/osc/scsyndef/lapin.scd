@@ -1,5 +1,5 @@
 SynthDef(\lapin, {
-	|bus=0, amp=1, atk=0.001, decay=0.01, sus=1,rel=0.01, level=0.8, peak=1, gate=1, pan=0, freq=0, fmod=0, vib=0, rate=1, blur=1, beat_dur=1|
+	|bus=0, amp=1, atk=0.001, decay=0.01, sus=1, rel=0.01, level=0.8, peak=1, gate=1, pan=0, freq=0, fmod=0, vib=0, rate=1, blur=1, beat_dur=1|
 	var osc, env, string;
 	sus = sus*blur;
 	string = { |freq|
@@ -27,7 +27,6 @@ SynthDef(\lapin, {
 		osc = AllpassN.ar(osc,d,d,5);
 	};
 	env = EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
-	//osc = osc * amp * 0.35;
 	osc = osc * env * amp;
 	osc = Mix(osc) * 0.04;
 	osc = Pan2.ar(osc, pan);

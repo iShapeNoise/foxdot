@@ -4,7 +4,7 @@ SynthDef.new(\rhodes, {
 	freq = In.kr(bus, 1);
 	freq = [freq, freq+fmod];
 	osc = Pulse.ar(freq*[1,33.5.midiratio],[0.2,0.1],[0.7,0.3]);
-	env=EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
+	env = EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
 	osc = BLowPass4.ar(osc,(cutoff*(env.squared))+200+freq,rq);
 	osc = Mix(osc*env*amp) * 0.35;
 	osc = Pan2.ar(osc, pan);

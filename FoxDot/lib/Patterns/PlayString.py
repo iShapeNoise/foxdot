@@ -46,7 +46,7 @@ class PlayString:
                     return i
         err = "Closing bracket {!r} missing in string {!r}".format(sub, "".join(self.original))
         raise ParseError(err)
-    
+
     def next_char_index(self, char, start=0):
         try:
             return self.string[start:].index(char) + start

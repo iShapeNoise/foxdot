@@ -159,6 +159,7 @@ Impulse = cls("Impulse")
 Blip = cls("Blip")
 Klank = cls("Klank", ref="`")
 Resonz = cls("Resonz")
+MoogVCF = cls("MoogVCF")
 
 # Other
 K2A = cls("K2A")

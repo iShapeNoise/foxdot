@@ -10,7 +10,7 @@ from __future__ import absolute_import, division, print_function
 from .Patterns import *
 from .Utils  import *
 from .Patterns.Operations import *
-from .Constants import inf 
+from .Constants import inf
 
 from time import time
 
@@ -236,7 +236,7 @@ class TimeVar(object):
 
         i = self.get_current_index(time)
         self.current_value = self.calculate(self.values[i])
-        
+
         return self.current_value
 
     def copy(self):
@@ -285,7 +285,7 @@ class TimeVar(object):
     # Mathmetical operators
 
     def math_op(self, other, op):
-        """ Performs the mathematical operation between self and other. "op" should 
+        """ Performs the mathematical operation between self and other. "op" should
             be the string name of a dunder method  e.g. __mul__ """
         if not isinstance(other, (TimeVar, int, float)):
             if type(other) is tuple:
@@ -736,13 +736,13 @@ class PvarGenerator(Pvar):
     """
     def __init__(self, func, *args, **kwargs):
         self.p_func = func # p_func is the Pattern function e.g. PDur but self.func is created when operating on this PvarGenerator
-        
+
         self.args = []
 
         if "pattern" in kwargs:
 
             self.args.append(kwargs["pattern"])
-        
+
         self.args.extend( [(arg if isinstance(arg, TimeVar) else TimeVar(arg)) for arg in args] )
 
         self.last_args = []
@@ -775,8 +775,8 @@ class PvarGenerator(Pvar):
 
     def __getattribute__(self, attr):
         # If it's a method, only return the method if its new, transform, or a dunder
-        if attr in Pattern.get_methods():   
-            
+        if attr in Pattern.get_methods():
+
             if attr not in ("new", "now", "transform") and not attr.startswith("__"):
 
                 # return a function that transforms the patterns of the  root Pvar
@@ -804,7 +804,7 @@ class PvarGenerator(Pvar):
                         return self.func(new_pvar_gen, self.original_value)
 
                 return get_new_pvar_gen
-                
+
         return object.__getattribute__(self, attr)
 
 class PvarGeneratorEx(PvarGenerator):
