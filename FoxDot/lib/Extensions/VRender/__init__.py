@@ -17,6 +17,8 @@ class VRenderSynthDef(SynthDef):
         else:
             lyrics = "oo "
 
+        print("lyrics: \"", lyrics, "\"")
+
         if "dur" in kwargs:
             durations = kwargs['dur']
         else:
@@ -32,10 +34,10 @@ class VRenderSynthDef(SynthDef):
         else:
             sex = "female"
 
-        scale = list(Scale.default)
+        scale = [n+Root.default for n in list(Scale.default)]
         tempo = int(Clock.bpm)
 
-        notes = list(map(lambda x: x + Root.default,notes))
+        notes = list(map(lambda x: x,notes))
 
         renderizeVoice(filename,lyrics,notes,durations,tempo,scale,sex,FOXDOT_ROOT)
 

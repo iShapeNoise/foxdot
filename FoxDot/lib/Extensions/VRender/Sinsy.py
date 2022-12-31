@@ -1,5 +1,7 @@
 import sys
-import urllib
+#import urllib
+import urllib.request
+
 
 from functools import reduce
 
@@ -8,5 +10,5 @@ def download(output,wavPath):
 	index = text.find('./temp/') + len('./temp/')
 	text = text[index:index+40].split(".")[0]
 
-	testfile = urllib.URLopener()
+	testfile = urllib.request.URLopener()
 	testfile.retrieve("http://sinsy.sp.nitech.ac.jp/temp/" + text + ".wav", wavPath)

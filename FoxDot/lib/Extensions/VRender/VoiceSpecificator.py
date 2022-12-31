@@ -9,7 +9,6 @@ def generateVoiceSpecification(lyrics,tempo,inputMusicXMLPath,outputMusicXMLPath
 			f.write(addVoiceTags(tempo,lyrics,content))
 
 def addVoiceTags(tempo, text, content):
-	print("Text:\n" + str(text))
 	output = ""
 	tempo_xml = '<direction>\n<sound tempo="{}"/>\n</direction>'.format(tempo)
 	lyrics_xml = '<voice>1</voice>\n<lyric>\n<text>{}</text>\n</lyric>'
@@ -18,6 +17,8 @@ def addVoiceTags(tempo, text, content):
 	ignoreThisNote = False
 	for line in content:
 		if "<rest/>" in line:
+			ignoreThisNote = True
+		if "<tie type=\"stop\"/>" in line: # for multiple notes connected by a tie, we don't want to start a new word during the continuous note
 			ignoreThisNote = True
 		if "</note" in line:
 			if not ignoreThisNote:
