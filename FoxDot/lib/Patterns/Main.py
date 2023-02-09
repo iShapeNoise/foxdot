@@ -13,6 +13,7 @@ from ..Utils import *
 import functools
 import inspect
 
+
 # Decorator functions for nested expansion of pattern functions and methods
 
 def loop_pattern_func(f):
@@ -34,7 +35,7 @@ def loop_pattern_func(f):
         for i in range(LCM(*[len(arg) for arg in args if (hasattr(arg, '__len__') and not isinstance(arg, PGroup))])):
             pat |= f(*[(arg[i] if isinstance(arg, Pattern) else arg) for arg in args])
         return pat
-    new_function.argspec = inspect.getargspec(f)
+    new_function.argspec = inspect.getfullargspec(f)
     return new_function
 
 # TODO -- if it isn't looped, return the original if it is a group
@@ -58,7 +59,7 @@ def loop_pattern_method(f):
             pat |= f(self, *[(modi(arg, i) if not isinstance(arg, PGroup) else arg) for arg in args])
         return pat
 
-    new_function.argspec = inspect.getargspec(f)
+    new_function.argspec = inspect.getfullargspec(f)
     return new_function
 
 def PatternMethod(f):
