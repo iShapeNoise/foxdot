@@ -4,7 +4,7 @@ SynthDef.new(\subbass, {
     var env, in, ina, synca, octa, inb, syncb, syncc, octb, octave, osc;
 	freq = In.kr(bus, 1);
 	freq = [freq, freq+fmod];
-	freq = freq / 3;
+	freq = freq / 2;
     //A slightly rounded percussive envelope
 	env = Env.linen(atk, sus, rel, amp, [curve, -1 * curve]).kr(doneAction: 0);
 	//Input wave - To use SinOsc.ar, replace "iphase: 2" with "phase: 3pi/2"
