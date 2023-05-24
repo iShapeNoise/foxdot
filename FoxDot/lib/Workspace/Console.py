@@ -59,12 +59,16 @@ class console:
                              bd=0,
                              height=300,
                              yscrollincrement=1,
+                             yscrollcommand=self.y_scroll.set,
                              highlightthickness=0)
 
         self.canvas.bind("<Button-1>",          self.canvas_mouseclick)
         self.canvas.bind("<ButtonRelease-1>",   self.canvas_mouserelease)
         self.canvas.bind("<B1-Motion>",         self.canvas_mousedrag)
         self.canvas.bind("<MouseWheel>",        self.on_scroll)
+        # if SYSTEM == LINUX:
+        #     self.canvas.bind("<Button-4>",        self.scroll_text)
+        #     self.canvas.bind("<Button-5>",        self.scroll_text)
         self.canvas.bind("<Button-{}>".format(2 if SYSTEM == MAC_OS else 3), self.show_popup)
         self.canvas.bind("<{}-c>".format("Command" if SYSTEM == MAC_OS else "Control"),   self.edit_copy)
 
@@ -85,7 +89,7 @@ class console:
         self.text = self.canvas.create_text((self.padx, self.pady),
                                             anchor=NW,
                                             fill="white",
-                                            font = self.app.console_font)
+                                            font=self.app.console_font)
 
         self.text_cursor = None
 
@@ -169,24 +173,19 @@ class console:
 
                 self.canvas.itemconfig(self.text, width=self.canvas.winfo_width())
 
-                self.canvas.insert( self.text, "end", string )
+                self.canvas.insert(self.text, "end", string)
 
                 # Get the text bounding box
-
                 bbox = self.canvas.bbox(self.text)
 
                 # Text box height
-
                 self.text_height = bbox[3] - bbox[1]
 
                 # Canvas height
-
                 self.canvas_height = self.canvas.winfo_height()
 
                 # Only allow scrolling when the text is larger than the canvas
-
                 if self.text_height > self.canvas_height:
-
                     self.scrollable = True
 
                     # The text should only move so that the end is at the bottom of the canvas
@@ -284,7 +283,6 @@ class console:
         """ Moves the text up (negative) or down (positive) """
 
         if SYSTEM != MAC_OS:
-
             delta /= 100
 
         x, y = self.canvas.coords(self.text)
@@ -298,7 +296,8 @@ class console:
         return
 
     def on_scroll(self, event):
-        if self.scrollable: self.move_text(event.delta)
+        if self.scrollable:
+            self.move_text(event.delta)
         return "break"
 
     def get_scrollbar_size(self):
@@ -396,10 +395,10 @@ class Counter(Canvas):
         self.bg = colour_map.get('background', "gray30")
         self.active = True
         # Use 4 beats for now - will update in future?
-        
+
     def hide(self):
         self.active = False
-        self.grid_remove()        
+        self.grid_remove()
 
     def unhide(self):
         self.active = True
@@ -415,11 +414,11 @@ class Counter(Canvas):
         """
         Draw boxes and highlight current beat
         """
-        
+
         if not self.active:
-            
+
             return
-        
+
         cycle = self.metro.meter[0]
 
         # Need to adjust for latency

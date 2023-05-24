@@ -175,13 +175,13 @@ class workspace:
                                  bg=colour_map['background'],
                                  fg=colour_map['plaintext'],
                                  insertbackground="White",
-                                 font = self.codefont,
+                                 font=self.codefont,
                                  yscrollcommand=self.y_scroll.set,
                                  width=100,
                                  height=20,
                                  bd=0,
                                  undo=True, autoseparators=True,
-                                 maxundo=50 )
+                                 maxundo=50)
 
         self.text.grid(row=0, column=1, sticky="nsew")
         self.y_scroll.config(command=self.text.yview)
@@ -193,7 +193,7 @@ class workspace:
 
         self.linenumbers = LineNumbers(self, width=50,
                                        bg=colour_map['background'],
-                                       bd=0, highlightthickness=0 )
+                                       bd=0, highlightthickness=0)
 
         self.linenumbers.grid(row=0, column=0, sticky='nsew')
 
@@ -779,10 +779,9 @@ class workspace:
             print("Hmm... Looks like we couldn't open the chart app.")
         return
 
-
-    # Toggle console: Ctrl+#
-    #-----------------------------
-    def toggle_console(self,event=None):
+    #  Toggle console: Ctrl+#
+    #  -----------------------------
+    def toggle_console(self, event=None):
         if self.console_visible:
             self.console.hide()
             self.text.config(height=self.text.cget('height')+self.console.height)

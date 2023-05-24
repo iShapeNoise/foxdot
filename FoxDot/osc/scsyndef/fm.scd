@@ -5,7 +5,7 @@ SynthDef.new(\fm, {
 	freq = [freq, freq+fmod] * Line.ar(Rand(0.5,1.5),1,0.02);
 	mod = SinOsc.ar(freq * 1,0,freq * index);
 	osc = SinOsc.ar((freq * 2) + mod, 4);
-	osc = osc + (Mix.arFill(7, { CombL.ar(osc, 0.005, 0.15, 0.15) })/2);
+	osc = osc + (Mix.ar(7, { CombL.ar(osc, 0.005, 0.15, 0.15) })/2);
 	env = EnvGen.ar(Env.linen(atk, sus, rel, curve: \sin), doneAction: 0);
 	osc = (osc * env * amp);
 	osc = Mix(osc) * 0.02;

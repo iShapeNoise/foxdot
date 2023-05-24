@@ -1,1 +1,283 @@
+# PitchGlitch =====================
+# Release: ScarTrax - Industrial CrackDown
+# BBScar & KittyClock
+#Clock.set_time(0)
+
+Clock.reset()
+path = "/home/bbscar/Projects/Music/CodeSnippets/BBScar/wip/LivePieces/ScarTrax/"
+# TEMPO
+Clock.bpm = 93
+# SCALE
+Scale.default = Scale.aeolian
+# NOTES
+var.bl = var([0, 2], 32)
+var.bln = var([0, 7, 5, 3], [1, 1/3, 1/3, 1/3])
+# old
+#var.bassnt = var([0, 1, 0, 3, 1, 0, 1, 0, 1, 3], durtime)
+#var.chords = var([(0, 1, 3), (1, 3, 4), (0, 1, 3), (3, 5, 6), (1, 3, 5), (0, 1, 3), (1, 3, 4), (0, 1, 3), (1, 4, 6), (3, 5, 7)], durtime)
+# TIMING
+durtime = [4, 4, 4, 2, 2]
+var.brks = var([1, 0], [28, 4, 31, 1, 31, 1, 56, 8])
+# AMBIENT
+a1 >> pmcrotal(var.bl, oct=3, dur=8, sus=a1.dur*2, echo=1/2, chop=a1.dur*32, vib=expvar([0, 8], 16), bend=1/12, lpf=PxRand(800, 1200, seed=83), room=2/3, mix=1/3, pan=(-2/3, 2/3), amplify=3/6, amp=1)
+a2 >> rsin(var.bl, oct=4, dur=PRand([1, 4, 3, 8]), sus=a2.dur*2, slide=[0, 0, 0, PRand([0, 1/3, 1/2, 2/3, -1/2, -2/3, -1])], room=2/3, mix=1/2, pan=linvar([-2/3, 2/3], 16), amplify=3/8, amp=1)
+Ambient = Group(a1, a2)
+Ambient.amp=0
+# FACTORY SOUNDS
+b1 >> play("r", sdb=1, dur=var([1, 2, 4], PRand([4, 8, 16, 32])), cut=1/2, delay=[0, 0, [1/4, 3/4], 0, [1/8, 1/2], 0, 1/2, 0], sample=6, room=1, mix=PxRand(2, 5, seed=23)/6, pan=PWhite(-1, 1), amplify=1/4, amp=1)
+b2 >> play("r", sdb=1, dur=var([2, 4], PRand([4, 16], seed=9)), sample=PRand([4, 7], 8), rate=[4/5, PRand([4/5, 1, 6/5], seed=3), 4/5, PRand([4/5, 1, 6/5], seed=4)], room=5/6, mix=PxRand(2, 5, seed=23)/5, pan=PWhite(-2/3, 2/3), amplify=1/4, amp=1)
+b3 >> play("r", sdb=1, dur=2, delay=[0, (0, 1/2), 0, [(0, 1/2), (0, 4/5, 3/2)]], sample=14, room=2/3, mix=linvar([1/3, 3/4], 16), pan=PSine(32), amplify=1/3 * P[1, 1/2, 4/5, 1/2], amp=1)
+b4 >> play("k", dur=8, sdb=1, sample=7, rate=1/2, room=3/4, mix=2/3, pan=PSine(64), amplify=1/3 * var([1, 0], [8, PRand([8, 8, 24, 56])]) * PxRand(1, 3) / 3, amp=1)
+Factory = Group(b1, b2, b3, b4)
+Factory.amp=0
+# THEME 1
+c1 >> dafbass(var.bl, oct=7, dur=1, ffmod=expvar([2/3, 2/5], 8), peak=1, rel=1/5, lpf=expvar([2000, 1000], 8), amplify=expvar([2/3, 1/8], [7, 9]), amp=1)
+c2 >> click(oct=expvar([6, 8], 64), dur=4, sus=1/80, hpf=0, hpr=1/2, pan=PWhite(-2/3, 2/3), amplify=2/3, amp=1)
+c3 >> click(dur=3/4 * c2.dur, oct=c2.oct, sus=1/100, hpf=0, hpr=1/2, pan=PWhite(-2/3, 2/3), amplify=2/3, amp=1)
+c4 >> click(dur=[2, 4], delay=[1/2, 3/4], oct=c3.oct, sus=1/90, hpf=0, hpr=1/2, amplify=2/3, amp=1)
+c5 >> bell(c1.degree, dur=1/2, oct=9, chop=8, tremolo=4, ringAmp=1, ringRel=1/2, wobbleMin=PWhite(1/4, 1), sus=PRand([4, 2, 1]), strikeHarmonic=expvar([2, 2, 5/2], 16), strikeDec=1/100, strikeAmp=1, room=2/3, mix=var([1/2, 2/3], 32), pan=PSine(32), amplify=1/2*expvar([1/4, 1/8], [7, 9, 13]), amp=1)
+Theme = Group(c1, c2, c3, c4, c5)
+Theme.amp=0
+# BUILD UP
+d1 >> filthysaw(var.bl, oct=3, dur=4, cf=200, t_bd=0.1, pw=2/3, room=2/3, mix=1/3, amplify=4/5, amp=1)
+d2 >> growl(var.bl+var.bln, oct=4, chop=2, shape=1/3, formant=2, hpf=800, hpr=1/2, room=2/3, mix=1/2, pan=linvar([-2/3, 2/3, 2/3, -2/3], 32), amplify=3/8, amp=1)
+d3 >> garfield(d1.degree, oct=4, chop=4, room=1/2, mix=1/3, pan=0, amplify=4/5, amp=1)
+d4 >> wsaw(var.bl, oct=4, dur=2, sus=2, chop=8, formant=linvar([2, 3], 16), lpf=linvar([200, 1800], [16, 0]), lpr=1/4, room=linvar([1/3, 1/2], 32), mix=1/2, pan=0, amplify=4/5*linvar([0, 1], [16, 0]), amp=1)
+d5 >> spacesaw(d2.degree, oct=3, dur=1, chop=4, shape=2/3, hpf=1800, hpr=3/4, lpf=expvar([900, 2000], 8), lpr=1/3, room=2/3, mix=1/2, pan=linvar([-2/3, 2/3], 4), amplify=5/7, amp=1)
+Buildup = Group(d1, d2, d3, d4, d5)
+Buildup.amp=1
+# BREAK
+f1 >> filthysaw(var.bl, oct=4, dur=2, sus=1, bend=expvar([0, -1/100], 24), benddelay=0.9, t_bd=PWhite(0, 1/25) + expvar([0, 1/8], 32), t_sd=expvar([0, 1/5], 128), pw=PWhite(0.4, 0.6), lpf=PWhite(400, 1200) * expvar([1, 3/2], 128), lpr=PWhite(1/5, 1), atk=expvar([0.01, 0.00001], 16), room=2/3, mix=PWhite(1/4, 1/3), amplify=3/4, amp=1)
+f2 >> filthysaw(var.bl, oct=4, dur=4, lpf=PWhite(400, 700) * PRand([1, 1, 1, 1, 2, 3], 2), pw=expvar([1, 3/4], 32), lpr=1/5, atk=1, tremolo=4, amplify=expvar([1/3, 1/5], 32), amp=1)
+f3 >> wsaw(var.bl, oct=4, dur=2, sus=2, chop=8, formant=linvar([2, 3], 16), lpf=linvar([200, 1800], [16, 0, inf]), lpr=1/3, room=linvar([1/3, 1/2], 32), mix=1/2, pan=(-2/3, 2/3), amplify=4/5, amp=1)
+f4 >> wsaw(var([var.bln], 4), oct=5, dur=2, sus=2, chop=96, tremolo=1, formant=linvar([0, 4], 16), room=linvar([3/4, 1], 32), mix=1/2, pan=(-2/3, 2/3), amplify=4/7, amp=1)
+f5 >> spacesaw(e2.degree, oct=3, dur=1, chop=3, shape=1/2, hpf=1800, hpr=3/4, lpf=expvar([900, 2000], 8), lpr=1/3, room=2/3, mix=1/2, pan=linvar([-2/3, 2/3], 4), amplify=5/7, amp=1)
+f6 >> spacesaw(e4.degree, oct=4, dur=1, chop=1, shape=1/2, hpf=1800, hpr=3/4, lpf=expvar([900, 2000], 8), lpr=1/3, room=2/3, mix=1/2, pan=linvar([-2/3, 2/3], 4), amplify=5/7, amp=1)
+f7 >> play('#', sdb=1, dur=4, delay=1/2, sample=10, rate=6/5, pshift=-5, room=3/4, mix=1/2, amplify=3/2*var([0, 1, 0], [16, 4, 44])*var([1, 0], 64), amp=1)
+f8 >> play('#', sdb=1, sample=13, atk=3/4, dur=8, trim=3/5, room=3/4, mix=1/2, amplify=2*var([0, 1, 0], [48, 4, 12])*var([1, 0], 64), amp=1)
+f9 >> chipsy(var([var.bl, [var.bl+4, var.bl+3], var.bl+2, var.bl+1], [6, 1, 1/2, 1/2]), oct=6, dur=var([1/4, 1/2, 1/4], [6, 1, 1]), sus=var([1/2, 1/8], 32), shape=linvar([1/8, 2/3], 16), drive=1/8, chop=var([2, 6], 32), lpf=linvar([600, 4000], 16), lpr=linvar([1/3, 1/5], 16), room=2/3, mix=1/3, amplify=1/4*var([0, 1], 64), amp=1)
+Break = Group(f1, f2, f3, f4, f5, f6, f7, f8)
+Break.amp=0
+e1 >> brass(var.bl, oct=(3, 4), dur=4, sus=3, echo=1, lpf=400, lpr=1/3, echotime=6, formant=(0, 2), shape=(0, 1/8), amplify=2/3, amp=1)
+e2 >> ecello(var.bl+P[:4], oct=var([5, 6], 32), dur=PDur(5, 8), chop=2, shape=3/4, drive=5/12, pan=0, room=1/3, mix=1/3, amplify=3/4, amp=1)
+e3 >> hoover(e1.degree, oct=var([4, 6], 32), dur=2, sus=2, chop=16, drive=1/8, lpf=expvar([1800, 4000], 16), lpr=linvar([3/4, 1/6], [16, 0]), pan=0, room=3/4, mix=1/2, amplify=3/4, amp=1)
+e4 >> sinepad(e2.degree, oct=7, dur=[1, 1/3, 2/3], sus=1/2, shape=2, formant=2, resonz=1, drive=1, pong=[0, 3/4], fmod=1, room=2/3, mix=1/3, pan=PWhite(-2/3, 2/3), amplify=3/4, amp=1)
+Drop = Group(e1, e2, e3, e4)
+Drop.amp=0
+# VOCAL
+v1 >> loop(path+"IndustrialCrackDown/Its2045.wav", dur=4, sus=4, rate=1, formant=2, pong=1/2, pongtime=8, beat_stretch=False, room2=1, mix=1/2, amplify=3/4*var([1, 0], [4, 28]), amp=1)
+v1.amp=0
+
 print(SynthDefs)
+
+# Air Noises
+g1 >> laserbeam(var.bl-1, oct=8, dur=16, atk=1/100, chop=64, vib=[0, 0, 0, 4], lpf=P[[2500, 1750, 2250, 2000], 2000, [3500, 2500], [1850, 1750]], room=5/6, mix=linvar([2/3, 4/5], 16), pan=PWhite(-3/4, 3/4), amplify=PRand(1, 4, seed=8) / 10, amp=1)
+g2 >> bchaos(PxRand([-3, 3]), dur=PRand([4, 6, 8, 12, 16]), formant=4, bend=1/2, room=2/3, mix=2/3, pan=expvar([PWhite(-1, 1), PWhite(-1, 1)], [PxRand([4, 8, 16]), 0]), amplify=2/3*var([0, PRand([0, 6/7])], PRand(8, 32, seed=5)), amp=1)
+g3 >> ppad(g1.degree, oct=7, dur=2, sus=4, shape=1/4, bend=[0, [0, 1, 3]], benddelay=[0, 1/4], chop=PRand([2, 4, 8], 4), tremolo=PRand([0, 1, 3, 4], 8), slide=expvar([5/7, 1/7], [PRand([2, 4, 8, 16]), 0]), lpf=linvar([0, 1700], [4, 4, 4, PRand([4, 8, 16])]), room=4/5, mix=1/2, pan=PWhite(-2/3, 2/3), amplify=1/2*var([1, PRand([1/12, 1/8])], PRand([8, 16, 32])), amp=1)
+Outro = Group(g1, g2, g3)
+Outro.amp=0
+r1 >>  play("/", sdb=1, dur=8, delay=4, sus=8, sample=13, hpf=2000, hpr=1/4, rate=1, amplify=3/4, amp=1)
+r1.amp=0
+t1 >> play("O", sdb=1, dur=Pvar([PDur(3, 8), 1/2, 1/4, 1/8], [8, 2, 2, 4]), sample=13, rate=3/2, hpf=Pvar([1000, linvar([1000, 2000], [8, 0])], 8), room2=1, mix=1/2, amplify=3/7*var([1, 3/2, 2, 5/2, 0], [8, 2, 2, 2, 2]), amp=1)
+Trans1 = Group(t1)
+Trans1.amp=0
+
+# SAMPLES
+# BEAT 1
+x1 >> play('v', sdb=1, sample=2, dur=1, sus=P[1/50, 1/50, 1, 1/50], lpf=80, rate=var([1, 2], [28, 4]), lpr=2/3, amplify=2/3, amp=1)
+x2 >> play('V', sdb=1, sample=8, dur=2, delay=[0, [(0, 1/2), 0], 0, [0, (0, 4/5)]], amplify=2/3, amp=1)
+# Snares
+x3 >> play('U', sdb=1, dur=2, delay=1, sample=8, cut=1, ping=2, rate=linvar([2, 1/2], [8, 0]), room=2/3, mix=1/3, amplify=4/5, amp=1)
+x4 >> play('H', sdb=1, sample=9, dur=8, delay=P[0, 1/2], lpf=2400, lpr=1/3, room=3/4, mix=1/2, pan=PWhite(-1/2, 1/2), amplify=2/3, amp=1)
+x5 >> play('O', sdb=1, dur=4, delay=2, sample=6, rate=-1, room=2/3, mix=1/2, amplify=4/5, amp=1)
+# HiHat / Shaker
+x6 >> play('s', sdb=1, sample=10, dur=1, delay=1/2, rate=1, room=2/3, mix=2/5, pan=PWhite(-3/4, 3/4), amplify=PWhite(2/3, 4/5) * expvar([1, [1/2, 3/4, 1, 1]], 3), amp=1)
+x7 >> play('-', sdb=1, dur=PDur(5, 8), sample=8, room=3/4, mix=1/2, amplify=5/6, amp=1)
+x8 >> play('n', sdb=1, sample=5, dur=1, delay=1/2, lpf=expvar([2000, 7000], [16, 32, 24, 8, 8]), room=3/4, mix=1/2, pan=P[-1/2, 0, 1/4], amplify=2/3, amp=1)
+x9 >> play("q", sdb=1, sample=11, dur=16, cut=4, rate=1/3, lpf=2400, lpr=1/3, room=3/4, mix=1/2, pan=0, amplify=3/4, amp=1)
+Beat1 = Group(x1, x2, x3, x4, x5, x6, x7, x8, x9)
+Beat1.amp=1
+
+Beat1.hpf=0
+
+Beat1.lpf=0
+
+# BEAT 2
+z1 >> play("V", sdb=1, dur=1, delay=0, sample=6, krush=1, amplify=4/7, amp=1)
+z2 >> play("x", sdb=1, dur=var([2, 1], [12, 4]), delay=[(0, 1/3), 0, 0, 0, 0, 0], sample=10, krush=1, pshift=var.bl, pong=[0, 0, 0, 1/2], amplify=4/5, amp=1)
+z3 >> play("a", sdb=1, dur=4, sus=8, rate=var([1, 4/5], [28, 4, 56, 8, 31, 1, 31, 1]), chop=PRand([0, 32, 64], 8), sample=38, krush=1, pong=1/2, pongtime=[0, 2, 0, 4], room2=1, mix=1/2, amplify=2/8, amp=1)
+z4 >> play("o", sdb=1, dur=1, delay=1/2, sample=25, rate=var([1, 3/2], 16), krush=var([1, 0], 16), pong=var([0, [1/2, 3/4]], [6, 2]), room2=1, mix=1/2, amplify=5/6, amp=1)
+z5 >> play("Q", sdb=1, dur=1, delay=[[(0, 1/3), 1/2], 1/2, 1/2, 1/2], sample=25, cut=1/2, rate=1, shape=2/3, chop=var([2, 4], 8), room=3/4, mix=1/2, pan=PWhite(-2/3, 2/3), amplify=4/6, amp=1)
+z6 >> play("E", sdb=1, dur=1, sample=var([3, 7, 14], 16), rate=[1, -1], chop=var([0, 16, 0, 12], 8), shape=1/4, room=2/3, mix=1/2, amplify=2/3 * var([1, 0, 1], [1, 2, 1]), amp=1)
+z7 >> play("y", sdb=1, dur=1, delay=1/2, sample=4, rate=var([1, 2], 16), krush=1, room=1/2, mix=1/2, amplify=4/7 * var.brks, amp=1)
+z8 >> play("-", sdb=1, dur=1/2, delay=(1/2, 3/4), sample=var([7, 8], 16), rate=var([3/2, 2], 16), amplify=3/5, amp=1).sometimes("stutter", 3)
+
+Beat2 = Group(z1, z2, z3, z4, z5, z6, z7, z8)
+Beat2.amp=0
+
+
+
+# Perc
+y1 >> play('m', sdb=1, rate=-1, echo=1/4, echotime=2, sample=4, dur=1, lpf=300, amplify=3/4 * P[1, 0], amp=1)
+y2 >> play('k', sdb=1, sample=8, dur=1, sus=var([0.005, 1/10], [3, 1]), lpf=expvar([1000, 5000], 64), shape=1, pan=expvar([-1/3, 1/3], 8), amplify=3/5, amp=1)
+y3 >> play('k', sdb=1, dur=2, sample=12, tremolo=([4, 4, 2, 2], [2, 2, 2, 4]), lpf=expvar([1000, 4000], [16, 32, 64]), lpr=1/2, rate=(1, 2), room=4/5, mix=1/3, pan=PWhite(-1/2, 1/2), amplify=4/7, amp=1)
+y4 >> play("T", sdb=1, dur=2, delay=[1, [1, (1, 3/2)]], sample=12, room=3/4, mix=1/3, pan=PWhite(-2/3, 2/3), amplify=2/3, amp=1)
+y5 >> play("T", sdb=1, dur=4, sample=26, rate=3/2, shape=1/3, room=3/4, mix=1/3, pan=PWhite(-2/3, 2/3), amplify=2/3, amp=1)
+
+
+
+
+
+
+
+# Voice riser
+r3 >> play("c", sdb=1, dur=1/4, atk=1/4, sus=1/4, cut=1/2, bend=1/2, spin=1/2, sample=8, chop=48, lpf=linvar([800, 3800], [16, 0]), pshift=var([0, 16], [16, 0]), shape=1, rate=linvar([-1/3, -1], [16, 0]), room=1/2, mix=1/2, amplify=linvar([3/2, 2], [16, 0]), amp=1)
+r3.amp=0
+# Beats
+z1 >> play("V", sdb=1, dur=1, delay=0, sample=6, krush=1, amplify=4/6, amp=1)
+z2 >> play("x", sdb=1, dur=2, delay=0, sample=10, krush=1, pshift=var.bln, pong=[0, 0, 0, 1/2], amplify=4/5, amp=1)
+z3 >> play("a", sdb=1, dur=2, delay=1, sus=4, rate=var([1, 4/5], [28, 4, 56, 8, 31, 1, 31, 1]), chop=PRand([0, 32, 64], 16), sample=38, krush=1, pong=1/2, pongtime=[0, 2, 0, 4], room2=1, mix=2/3, amplify=3/7*var([1, 1], [224, 32]), amp=1)
+z4 >> play("O", sdb=1, dur=1, delay=[1/2, 1/2, 1/2, [1/2, (1/2, 3/4)]], sample=28, rate=var([2, 3/2], 16), krush=var([1, 0], 32), pong=[0, 0, 0, [1/2, 0]], room2=2/3, mix=1/3, amplify=5/6, amp=1)
+z5 >> play("R", sdb=1, dur=1/4, sample=var([20, 21], 32), rate=var([1, 2], 16), room=3/4, mix=1/3, amplify=3/7, amp=1).every(32, "stutter", 3)
+z6 >> play("E", sdb=1, dur=1, sample=14, rate=[1, -1], chop=var([0, 12, 0, 8], 8), formant=linvar([0, 2], 16), shape=1/4, room=2/3, mix=1/2, amplify=4/5 * var([1, 0, 1], [1, 2, 1]), amp=1)
+z7 >> play("y", sdb=1, dur=2, delay=1, sample=4, rate=var([1, 2], 16), krush=1, room=1/2, mix=1/2, amplify=5/7 * var.brks, amp=1)
+z8 >> play("-", sdb=1, dur=1/4, sample=var([7, 8], 32), rate=var([3/2, 2], 64), amplify=4/5, amp=1).sometimes("stutter", 3).every(64, "amen")
+gBeat2 = Group(z1, z2, z3, z4, z5, z6, z7, z8)
+gBeat2.amp=1
+
+
+
+gAmbi.amp=var([1, 0], [32, inf], start=Clock.now())
+gClockWork.amp=var([1, 0], [16, inf], start=Clock.now()+16)
+gBuild1.amp=var([1, 0, 0], [30, 2, inf], start=Clock.now()+32)
+v1.amp=var([1, 0], [4, inf], start=Clock.now()+48)
+r1.amp=var([1, 0], [8, inf], start=Clock.now()+56)
+gT1.amp=var([1, 0], [16, inf], start=Clock.now()+48)
+gBeat1.amp=var([1, 0], [32, inf], start=Clock.now()+64),
+
+gBeat1.amp=1
+
+gDrop2.amp=1
+
+gBeat2.amp=1
+
+
+
+print(SynthDefs)
+
+
+
+
+
+# TEMPO
+Clock.bpm = 110
+
+
+
+
+y1 >> play("Y", sdb=1, sample=var([26, 1, 4, 26, 6], [32, 64, 16, 128, 64, 32, 64, 128, 128, 64]), lpf=expvar([400, PxRand([900, 2400])], PRand([16, 32, 64, 128])), lpr=1/3, room=3/4, mix=2/5, amplify=3/4*var.brks, amp=1)
+
+
+
+
+# BEATS
+
+p2 >> play("x", sdb=1, dur=2, sample=8, amplify=4/5, amp=1)
+p3 >> play("T", sdb=1, dur=2, delay=[1, [1, (1, 3/2)]], sample=12, room=3/4, mix=1/3, pan=PWhite(-2/3, 2/3), amplify=1, amp=1)
+p4 >> play("T", sdb=1, dur=4, sample=26, rate=3/2, shape=1/3, room=3/4, mix=1/3, pan=PWhite(-2/3, 2/3), amplify=1, amp=1)
+gBeat1 = Group(p1, p2, p3, p4)
+gBeat1.amp = 0
+
+u1 >> play("W", sdb=1, dur=4, delay=[0, (0, 1/2), 0, (0, 1, 3/2)], sample=3, amplify=4/5*var.brks, amp=1)
+
+
+u3 >> play("U", sdb=1, dur=2, delay=[1, [(1, 3/2), 1], 1, [[1, (1, 1+1/2)], (1, [1+4/5, 1+2/3])]], sample=8, room=3/4, mix=1/3, amplify=4/5, amp=1)
+
+
+y1 >> play(":", sdb=1, dur=1/2, sample=14, rate=2, amplify=3/2, amp=1).sometimes("stutter", 3).every(32, "stutter", 3)
+
+y2 >> play("@", sdb=1, dur=1/2, sample=10, rate=2, cut=var([1/4, 1/2, 3/4, 4/5, 1/2], [[32, 8, 4, 4], [16, 8], 32, [8, 16], 8, 16, 8, 4, 4]), amplify=4/8*var.brks, amp=1)
+
+v1 >> play("A", sdb=1, dur=1, rate=var([1, 4/5], [28, 4, 56, 8, 31, 1, 31, 1]), sample=var([14, 17], [28, 4, 56, 8, 31, 1, 31, 1]), amplify=3/5*var([1, 0], [224, 32]), amp=1)
+
+v2 >> play("a", sdb=1, dur=1, sample=20, rate=1, amplify=2/3 * var.brks, amp=1)
+
+v4 >> play("i", sdb=1, dur=1, delay=[0, [0, 1/4]], rate=3/4, sample=var([8, 1], [32, 64, 16, 128, 64, 32, 64, 128, 128, 64]), amplify=4/5 * var.brks * var([0, 1], [32, [32, 64], [16, 32], [16, 32, 64], 32, 64, 64, [64, 32]]), amp=1)
+
+
+
+v6 >> play("E", sdb=1, dur=1/2, sample=7, rate=3/2, cut=var([1/4, 1/2, 3/4, 4/5, 1/2], [[32, 8, 4, 4], [16, 8], 32, [8, 16], 8, 16, 8, 4, 4]), amplify=7/8*var.brks, amp=1)
+
+v7 >> play("J", sdb=1, dur=1, cut=2, rate=1, sample=var([8, 7], 4), pshift=1, amplify=1/2 * var([0, 1], [28, 4, 60, 4, 30, 2, 31, 1, 30, 2, 60, 2]), amp=1)
+gBeat2.amp=0
+
+
+
+# TRANS 1
+t1 >> play("A", sdb=1, dur=var([2, 1, 1/2, 1/4], [12, 8, 8, 4]), sample=8, drive=expvar([0, 1/20], [32, 0]), pan=(-2/3, 2/3), amplify=2/3, amp=1)
+t2 >> play("V", sdb=1, dur=var([2, 1, 1/2, 1/4], [12, 8, 8, 4]), sample=20, amplify=4/5, amp=1)
+t3 >> play("X", sdb=1, dur=var([2, 1, 1/2, 1/4], [12, 8, 8, 4]), sample=12, amplify=3/2, amp=1) 
+t4 >> play("O", sdb=1, dur=var([2, 1, 1/2, 1/4], [12, 8, 8, 4]), sample=3, room=3/4, mix=1/3, amplify=4/5, amp=1)
+gT1 = Group(t1, t2, t3, t4)
+gT1.amp=0
+# RISER 1
+u1 >> play("/", sdb=1, dur=32, cut=28, rate=6/5, shape=1/4, sample=2, room=4/5, mix=1/2, amplify=4/5, amp=1).spread()
+gR1 = Group(u1)
+gR1.amp=0
+
+# Beats: Drops
+
+z7 >> play("N", sdb=1, dur=1/2, delay=1/2, sample=3,
+    lpf=linvar([1200, 4000], [24, 0, 8, 0, 28, 0, 4, 0, 60, 0, 4, 0, 60, 0, 4, 0]),
+    drive=var([0, linvar([0, 1/8], 8)], [32, 64, 16, 64, 64, 32, 32, 64, 64, 16]), 
+    pshift=var([0, 1], [[32, 8, 4, 4], [16, 8], 32, [8, 16], 8, 16, 8, 4, 4]),
+    amplify=var([2/3, 4/5], [32, 16, 64, 32, 64])*var.brks,
+    amp=1)
+
+
+
+#============== Start =====================
+
+gIntro.amp = linvar([0, 1, 1], [32, 0, inf], start=Clock.now())
+
+gBuild.amp = linvar([0, 1, 1], [8, 0, inf], start=Clock.now())
+gBuildUp.amp = var([0, 1], [32, inf], start=Clock.now())
+
+gBuildUp2.amp = linvar([0, 1, 1], [16, 0, inf], start=Clock.now())
+
+
+# Beat 16, 1
+gBeat1.amp = var([1, 0], [32, inf], start=Clock.now())
+gT1.amp = var([0, 1, 0, 0], [32, 30, 2, inf], start=Clock.now())
+gT1.hpf = expvar([0, 0, 1200], [48, 16, 0, inf], start=Clock.now())
+gR1.amp = var([0, 1, 0], [0, 32, inf], start=Clock.now())
+
+# Beats: BrksNBuild2
+w1 >> play("T", sdb=1, dur=var([2, 4], PRand([4, 8, 16, 32])), delay=[0, 0, [1/4, 3/4], 0, [1/8, 1/2], 0, 1/2, 0], rate=2/3, sample=12, room=4/5, mix=1/3, amplify=4/5, amp=1)
+w2 >> play("T", sdb=1, dur=var([1, 2], PRand([4, 8, 16, 32, 64])), cut=1/2, rate=[4/5, PRand([4/5, 1, 6/5], seed=3), 4/5, PRand([4/5, 1, 6/5], seed=4)], pshift=2, sample=26, room=4/5, mix=1/3, amplify=4/5, amp=1)
+gBeats3 = Group(w1, w2)
+gBeats3.amp=0
+
+
+
+# Beats: Drops
+z1 >> play("A", sdb=1, dur=1, rate=var([1, 4/5], [28, 4, 56, 8, 31, 1, 31, 1]), sample=var([14, 17], [28, 4, 56, 8, 31, 1, 31, 1]), amplify=3/5*var([1, 0], [224, 32]), amp=1)
+z2 >> play("a", sdb=1, dur=1, sample=20, rate=1, amplify=1 * var.brks, amp=1)
+z3 >> play("i", sdb=1, dur=1, delay=1/2, sample=1, amplify=4/5 * var.brks, amp=1).sometimes("stutter", 2, sample=3, delay=[0, 3/2]).every(64, "amen")
+z4 >> play("i", sdb=1, dur=1, delay=[0, [0, 1/4]], rate=3/4, sample=var([8, 1], [32, 64, 16, 128, 64, 32, 64, 128, 128, 64]), amplify=4/5 * var.brks * var([0, 1], [32, [32, 64], [16, 32], [16, 32, 64], 32, 64, 64, [64, 32]]), amp=1)
+z5 >> play("J", sdb=1, dur=1, cut=2, rate=1, sample=var([8, 7], 4), pshift=1, amplify=1/2 * var([0, 1], [28, 4, 60, 4, 30, 2, 31, 1, 30, 2, 60, 2]), amp=1)
+z6 >> play("Y", sdb=1, sample=var([26, 1, 4, 26, 6],[32, 64, 16, 128, 64, 32, 64, 128, 128, 64]), lpf=expvar([400, PxRand([900, 2400])], PRand([16, 32, 64, 128])), room=3/4, mix=2/5, amplify=3/5*var.brks, amp=1)
+z7 >> play("N", sdb=1, dur=1/2, delay=1/2, sample=3,
+    lpf=var([0, linvar([1200, 4000], [8, 0])],[64, 128, 32, 256, 128, 64, 128, 256, 256, 128]),
+    drive=var([0, linvar([0, 1/8], [8, 0])], [64, 128, 32, 256, 128, 64, 128, 256, 256, 128]), 
+    pshift=var([0, 1], [[32, 8, 4, 4], [16, 8], 32, [8, 16], 8, 16, 8, 4, 4]),
+    amplify=var([2/3, 4/5], [64, 32, 128, 64, 128])*var.brks,
+    amp=1)
+z8 >> play("V", sdb=1, dur=2, sample=4, amplify=4/5, amp=1)
+
+gBeats6 = Group(z1, z2, z3, z4, z5, z6, z7, z8, z9, z0)
+gBeats6.amp=0
+
+
+# End Song
+Master().amp = linvar([1, 0, 0], [32, 0, inf], start=Clock.now())

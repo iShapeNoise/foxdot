@@ -18,7 +18,7 @@ class _Effect:
 
         def decorator(effect):
             # Original args and defaults
-            effect_data = inspect.getargspec(effect)
+            effect_data = inspect.getfullargspec(effect)
             # Get filename from function name
             filename = "{}.scd".format(effect.__name__)  # filename
             # Supplies arg names

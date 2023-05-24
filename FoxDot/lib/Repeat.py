@@ -74,7 +74,7 @@ class Repeatable(object):
 
             self.previous_patterns[attr].set_root_pattern( self.attr[attr] )
 
-        self.update_pattern_methods(attr)     
+        self.update_pattern_methods(attr)
 
         return
 
@@ -102,7 +102,7 @@ class Repeatable(object):
     def get_attr_and_method_name(self, cmd):
         """ Returns the attribute and method name from a string in the form
             `"attr.method"` would return `"attr"` and `"method"`. If attr is not
-            present, it returns `"degree"` in place. 
+            present, it returns `"degree"` in place.
         """
 
         if cmd in self.method_synonyms:
@@ -143,7 +143,7 @@ class Repeatable(object):
             return False
 
     def is_player_method(self, method_name, attr="degree"):
-        """ Returns True if the method is a valid method  of `Player` """ 
+        """ Returns True if the method is a valid method  of `Player` """
         return hasattr(self, method_name) and attr == "degree"
 
     def get_method_by_name(self, cmd):
@@ -196,11 +196,11 @@ class Repeatable(object):
             # Raise TypeError if not a method
 
             err = "{} is not a valid method for type {}".format(cmd, self.__class__)
-            
+
             raise(TypeError(err))
 
         assert callable(method)
-        
+
         return attr_name, method
 
     def after(self, n, cmd, *args, **kwargs):
@@ -229,9 +229,9 @@ class Repeatable(object):
         except:
 
             pass
-        
+
         return self
-        
+
     def every(self, occurence, cmd, *args, **kwargs):
         """ Every n beats, call a method (defined as a string) on the
             object and use the args and kwargs. To call the method
@@ -351,7 +351,7 @@ class Repeatable(object):
 
             self.never(method)
 
-        return self            
+        return self
 
     def never(self, cmd, ident=None):
         """ Stops calling cmd on repeat """
@@ -359,33 +359,33 @@ class Repeatable(object):
         attr, method = self.get_attr_and_method_name(cmd)
 
         if ident is not None:
-        
+
             cmd = "{}-{}".format(cmd, ident)
 
         try:
             # If it a pattern method, undo it
-            
+
             if method in self.previous_patterns[attr]:
-            
+
                 self.previous_patterns[attr].remove(method)
-            
+
                 self.update_pattern_methods(attr)
-            
+
             self.repeat_events[cmd].stop()
-            
+
             del self.repeat_events[cmd]
-        
+
         except KeyError:
-        
+
             err = "Player method '{}' not active".format(cmd)
-        
+
             raise KeyError(err)
-        
+
         return self
 
     @staticmethod
     def convert_cycles(args, kwargs, occurence):
-        """ Converts any values that are instances of `Cycle` to a `var` with the 
+        """ Converts any values that are instances of `Cycle` to a `var` with the
             same duration as the frequency of the every call (occurrence) """
 
         args = [(var(value, occurence) if isinstance(value, Cycle) else value) for value in args]
@@ -397,8 +397,8 @@ class MethodCall:
     """ Class to represent an object's method call that,
         when called, schedules itself in the future """
     def __init__(self, parent, method, n, cycle=None, args=(), kwargs={}):
-        
-        self.parent = parent  
+
+        self.parent = parent
         self.method = method
 
         self.update(n, cycle, args, kwargs)
@@ -424,14 +424,14 @@ class MethodCall:
 
         # Check if a method has the _beat_ keyword argument
 
-        if "_beat_" in inspect.getargspec(self.method).args:
+        if "_beat_" in inspect.getfullargspec(self.method).args:
 
             self.kwargs["_beat_"] = None
 
         self.i, self.next = self.count()
 
         self.offset = float(modi(self.cycle, self.i)) if self.cycle is not None else 0
-        
+
         return self
 
     def count(self):
@@ -448,7 +448,7 @@ class MethodCall:
         # How much time left to fit remainder in
 
         try:
-       
+
             acc = now - (now % total_dur)
 
         except ZeroDivisionError:
@@ -484,7 +484,7 @@ class MethodCall:
         assert self.method is not None
 
         # Return without scheduling if stopping
-        
+
         if self.stopping:
 
             return
@@ -502,7 +502,7 @@ class MethodCall:
         self.next += float(self.when[self.i])
 
         if self.cycle is not None:
-            
+
             self.offset = float(modi(self.cycle, self.i))
 
         # Re-schedule the method call
@@ -510,7 +510,7 @@ class MethodCall:
         self.schedule()
 
         # Increase the index to get the next duration
-        
+
         self.i += 1
 
         return
