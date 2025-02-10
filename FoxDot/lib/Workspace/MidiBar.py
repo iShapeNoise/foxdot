@@ -1,8 +1,8 @@
 from .tkimport import *
 import time
 from threading import Thread
-from renardo_lib.Utils import midi_cmd
-from renardo_lib.Settings import *
+from ..Utils import midi_cmd
+from ..Settings import *
 from .Format import *
 
 
