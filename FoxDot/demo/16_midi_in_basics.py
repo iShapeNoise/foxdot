@@ -12,7 +12,7 @@ midi = MidiIn(1)
 # Check in Tools >> Midimaps, or with this command to dedicate needed Midi map
 midi.midimaps()
 
-Check MidiMaps via command line or in menu
+# Check MidiMaps via command line or in menu
 
 # Load Midi map
 midimap = midi.load_midimap(0)
@@ -20,8 +20,8 @@ midimap = midi.load_midimap(0)
 # Display MidiMap json file as dictionary in console
 print(midimap)
 
-As you can see the first in the json dictionary is the name of each element. In the following list are all specifications
-given in MidiMapper >> Type, CC, Value Range
+# As you can see the first in the json dictionary is the name of each element. In the following list are all specifications
+# given in MidiMapper >> Type, CC, Value Range
 
 # Load Value map
 valmap = midi.load_valmap("/path/to/valmap.json")
@@ -35,16 +35,16 @@ print(valmap)
 # change it when loading ValMap by adding the layer number at the end >> Default: 3
 valmap = midi.load_valmap("/path/to/valmap.json", 3)
 
-There is an example of an element with 3 attributes in 3 layers
+# There is an example of an element with 3 attributes in 3 layers
 
-Next shows the way to add those attributes and its values
+# Next shows the way to add those attributes and its values
 
 # Set values of first unit
 midi.set_value("U0:E0", "s1.lpf", [450, 80, 1])
 midi.set_value("U0:E1", "s1.lpr", [1/8, 1, 1])
 midi.set_value("U0:E2", "s1.drive", [3/4, 2, 3/4])
 
-Name first, Attribute of synth, group, or sample next, last a list of minimum, maximum and default value
+# Name first, Attribute of synth, group, or sample next, last a list of minimum, maximum and default value
 
 # Check values added to a particular element
 midi.get_value("U0:E0")
@@ -60,7 +60,7 @@ midi.get_value("U0:E0")
 midi.set_value("U0:E0", "s1.shape", [0, 2, 0])
 midi.set_value("U0:E1", "s1.formnat", [0, 4, 0])
 
-Oh sh..., I wrote formnat instead of formant
+# Oh sh..., I wrote formnat instead of formant
 
 midi.get_value("U0:E1")
 
@@ -107,7 +107,7 @@ midi.save_valmap("/home/bbscar/Projects/Music/Renardo_Dev/MidiIn/MidiMax_ValMap_
 # Load a ValMap
 valmap = midi.load_valmap("/home/bbscar/Projects/Music/Renardo_Dev/MidiIn/MidiMax_ValMap_Set.json")
 
-The midi functionality is set to work with all gui environment (well, that it what it suppose to do, please comment)
+# The midi functionality is set to work with all gui environment (well, that it what it suppose to do, please comment)
 
 # Start listening to Midi input and execute value changes and/or events
 midi.run()
@@ -115,7 +115,7 @@ midi.run()
 # Try assign attributes of s1 or synth1
 s1 >> dbass([0, 2], dur=PDur(3,5), amplify=2/3, amp=1)
 
-# Add a beat to it, which can be switch on/off 
+# Add a beat to it, which can be switch on/off
 b1 >> play("V", dur=1, amplify=1/8, amp=1)
 b2 >> play("-", dur=1/2, echo=[0, 1/4], amp=1)
 b3 >> play("o", dur=2, delay=1, amplify=1/4, amp=1)
@@ -125,11 +125,8 @@ beat1 = Group(b1,b2,b3,b4)
 # Stop listening to Midi input messages
 midi.stop()
 
-# Close MidiIn() 
+# Close MidiIn()
 midi.close()
-
-
-
 
 
 # -------------------------------------------------------------------
