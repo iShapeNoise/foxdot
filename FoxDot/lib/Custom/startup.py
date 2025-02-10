@@ -6,3 +6,4 @@
 # with a --no-startup flag to not load this file.
 from .Custom.RandomMachine import RandomMachine
 from .Custom.MindStalker import MindStalker
+from .Custom.OSCVG import OSCVG

@@ -1,21 +1,16 @@
+
 from __future__ import print_function, absolute_import
-
 import os
-
 import json
 from subprocess import check_output
-
 from ...Scale import freqtomidi
 from ...SCLang import CompiledSynthDef
 from ...Settings import SYNTHDEF_DIR
-
-
 try:
     from urllib import urlretrieve
 except ImportError:
     # Python 3
     from urllib.request import urlretrieve
-
 
 HERE = os.path.dirname(__file__)
 SONIC_PI_FILE = os.path.join(HERE, 'sonicpi.json')
@@ -26,6 +21,7 @@ class Container(dict):
     """ Simple dict that allows access to keys via properties """
     def __getattr__(self, attr):
         return self[attr]
+
 
 pisynth = Container()
 
@@ -95,10 +91,14 @@ def LoadSonicPiSynthsDev(sonic_pi_dir):
 
 
 def LoadSonicPiSynths(metadata_file=SONIC_PI_FILE):
-    """ Load sonic-pi synths from json metadata, downloading compiled synths if needed """
+    """
+    Load sonic-pi synths from json metadata, downloading compiled synths
+    if needed
+    """
     with open(metadata_file, 'r') as ifile:
         data = json.load(ifile)
     ref = data.pop('__ref__')
+
     def create_filename(fullname):
         filename = os.path.join(SYNTHDEF_DIR, fullname + '.scsyndef')
         if not os.path.exists(filename):

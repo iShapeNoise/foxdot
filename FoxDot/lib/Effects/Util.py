@@ -73,7 +73,6 @@ class Effect:
     server = Server
 
     def __init__(self, foxdot_name, synthdef, args={}, control=False):
-
         self.name = foxdot_name
         self.synthdef = synthdef
         self.filename = EFFECTS_DIR + "/{}.scd".format(self.synthdef)
@@ -131,14 +130,12 @@ class Effect:
 
     def load(self):
         ''' writes to file and sends to server '''
-
         # 1. See if the file exists
         if os.path.isfile(self.filename):
             with open(self.filename) as f:
                 contents = f.read()
         else:
             contents = ""
-
         # 2. If it does, check contents
         this_string = self.__str__()
         if contents != this_string:
@@ -147,7 +144,6 @@ class Effect:
                     f.write(this_string)
             except IOError:
                 print("IOError: Unable to update '{}' effect.".format(self.synthdef))
-
         # 3. Send to server
         self.load()
 
@@ -253,7 +249,7 @@ class EffectManager(dict):
         return
 
 
-# -- TODO
+# -- ToDo
 
 # Have ordered effects e.g.
 # 0. Process frequency / playback rate
@@ -262,7 +258,6 @@ class EffectManager(dict):
 # 3. After envelope
 
 FxList = EffectManager()
-
 Effects = FxList  # Alias - to become default
 
 # Frequency Effects, Signal Effects, Post-envelope Effects

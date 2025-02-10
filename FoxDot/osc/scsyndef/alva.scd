@@ -7,8 +7,8 @@ SynthDef.new(\alva, {
 	freq = In.kr(bus, 1);
 	freq = [freq, freq+fmod];
 	osc = SinOsc.ar(freqenv, VarSaw.kr(0), 4) - SinOscFB.ar(freqenv2/0.2, fmod + 1, freq, 2);
-	env=EnvGen.ar(Env(times: [(sus / 8), sus], levels: [0, amp, 0],curve: 'lin'), doneAction: 0);
-	osc=(osc * amp * env);
+	env = EnvGen.ar(Env(times: [(sus / 8), sus], levels: [0, amp, 0],curve: 'lin'), doneAction: 0);
+	osc = (osc * amp * env);
 	osc = Limiter.ar(osc);
 	osc = Mix(osc) * 0.07;
 	osc = Pan2.ar(osc, pan);

@@ -86,5 +86,4 @@ def filterSwell(swell=0, sus=1, hpr=1):
                     (sus * 0.25)],
                     curve="\\sin"))
     osc = RHPF.ar(Effect.In(), env * swell * 2000, hpr)
-
     return Effect.Out(osc)

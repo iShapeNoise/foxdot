@@ -16,7 +16,7 @@ def format_args(args=[], kwargs={}, delim=': '):
 class cls:
     def __init__(self, name, **kwargs):
         self.name = name
-        self.ref  = kwargs.get("ref", "")
+        self.ref = kwargs.get("ref", "")
 
     def __str__(self):
         return str(self.name)
@@ -103,7 +103,7 @@ class instance:
             self = instance(str(self))
             other = instance(str(other))
             return (self, other)
-        except:
+        except Exception:
             return
 
     def __getattr__(self, name, *args, **kwargs):

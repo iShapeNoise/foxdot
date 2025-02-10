@@ -1,5 +1,6 @@
-FoxDot - Live Coding with Python v0.8
+FoxDot - Live Coding with Python v0.9
 =====================================
+
 
 This branch of the original FoxDot is called PitchGlitch.
 It is an attempt to continue to develop FoxDot ever more for Live Coding
@@ -14,9 +15,29 @@ FoxDot is a Python programming environment that provides a fast and user-friendl
 There is momentarily no pip package for this branch, so you will need to install
 it via setup.py
 
+
+### v0.9 branch "PitchGlitch"
+
+New features:
+
+- New editor based on [ttkBootstrap](https://ttkbootstrap.readthedocs.io/en/latest/) module
+- Preferences section with theme editor
+- Searchbar
+- Treeview opens python scripts
+- Midibar to show changing values according to LiveCoding rules
+- MidiMapper (Maps Midi devices)
+- SampleChart app now with progressbar
+
+#### New functions:
+
+- New MidiIn() functionality
+
+For more info, please check Tutorial 16_midi_in_basics.py under Menu >> Help
+
+
 ### v0.8 branch "PitchGlitch"
 
-Credits to CrashServer, KittyClock and others who provided many synths, fxs and other functions for this branch of FoxDot.
+Credits to CrashServer, KittyClock,  and others who provided many synths, fxs and other functions for this branch of FoxDot.
 
 #### **SynthDefs:**
 

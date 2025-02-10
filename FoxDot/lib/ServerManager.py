@@ -2,12 +2,10 @@
 """
 from __future__ import absolute_import, division, print_function
 import sys
-
 if sys.version_info[0] > 2:
     import queue
 else:
     import Queue as queue
-
 import json
 import socket
 import sys
@@ -15,10 +13,8 @@ import threading
 import time
 import itertools
 import os.path
-
 from collections import namedtuple
 from threading import Thread
-
 from .Code import WarningMsg
 from .Settings import *
 
@@ -37,9 +33,12 @@ ServerInfo = namedtuple(
 
 
 class OSCClientWrapper(OSCClient):
-    error_printed=False
+    error_printed = False
+
     def send(*args, **kwargs):
-        """ Sends the message given but prints errors instead of raising them """
+        """
+        Sends the message given but prints errors instead of raising them
+        """
         try:
             OSCClient.send(*args, **kwargs)
         except OSCClientError as e:
@@ -103,7 +102,7 @@ class BidirectionalOSCServer(OSCServer):
     def send(self, *args, **kwargs):
         try:
             self.client.send(*args, **kwargs)
-        except OSCClientError as e:
+        except OSCClientError:
             if not self._printed_error:
                 print("Error: No connection made to SuperCollider server instance.")
                 self._printed_error = True
@@ -111,14 +110,14 @@ class BidirectionalOSCServer(OSCServer):
     def receive(self, pattern, timeout=2):
         """
         Retrieve the first message matching the pattern
-
         All messages received that do not match will be discarded
         """
         expr = getRegEx(pattern)
         now = start = time.time()
         while now - start < timeout:
             try:
-                addr, data = self._response_queue.get(True, start + timeout - now)
+                addr, data = self._response_queue.get(True,
+                                                      start + timeout - now)
             except queue.Empty:
                 raise RequestTimeout()
             if type(addr) is bytes:
@@ -128,16 +127,16 @@ class BidirectionalOSCServer(OSCServer):
                 return data
             now = time.time()
 
-#  Create an abstract base class that could be sub-classed for users who want to send their OSC messages elsewhere
 
+# Create an abstract base class that could be sub-classed for users who want
+# to send their OSC messages elsewhere
 class ServerManager(object):
     def __init__(self, addr, port, osc_address="/s_new"):
         self.addr = addr
         self.port = port
         self.client = OSCClientWrapper()
-        self.client.connect( (self.addr, self.port) )
+        self.client.connect((self.addr, self.port))
         self.osc_address = osc_address
-
         self.node = 1000
         self.num_input_busses = 2
         self.num_output_busses = 2
@@ -154,11 +153,11 @@ class ServerManager(object):
         return msg
 
     def sendOSC(self, osc_message):
-        self.client.send( osc_message )
+        self.client.send(osc_message)
         return
 
     def get_bundle(self, *args, **kwargs):
-        bundle  = OSCBundle(time=kwargs.get("timestamp", 0))
+        bundle = OSCBundle(time=kwargs.get("timestamp", 0))
         message = OSCMessage(self.osc_address)
         for item in args:
             if type(item) == dict:
@@ -170,55 +169,47 @@ class ServerManager(object):
 
     def loadSynthDef(self, *args, **kwargs):
         return
+
     def setFx(self, *args, **kwargs):
         return
 
-class SCLangServerManager(ServerManager):
 
-    fxlist    = None
+class SCLangServerManager(ServerManager):
+    fxlist = None
     synthdefs = None
 
     def __init__(self, addr, osc_port, sclang_port):
-
         self.addr = addr
         self.port = osc_port
         self.SCLang_port = sclang_port
-
         self.midi_nudge = 0
-
         self.booted = False
         self.wait_time = 5
         self.count = 0
-
         # Assign a valid OSC Client
         self.forward = None
-
         self.node = 1000
         self.num_input_busses = 2
         self.num_output_busses = 2
         self.bus = self.num_input_busses + self.num_output_busses
         self.max_busses = 100
         self.max_buffers = 1024
-
         self.fx_setup_done = False
         self.fx_names = {}
-
         self.reset()
 
     def reset(self):
-
         # General SuperCollider OSC connection
         self.client = OSCClientWrapper()
-        self.client.connect( (self.addr, self.port) )
-
+        self.client.connect((self.addr, self.port))
         # OSC Connection for custom OSCFunc in SuperCollider
         if GET_SC_INFO:
             self.sclang = BidirectionalOSCServer()
-            self.sclang.connect( (self.addr, self.SCLang_port) )
+            self.sclang.connect((self.addr, self.SCLang_port))
             self.loadSynthDef(FOXDOT_INFO_FILE)
             try:
                 info = self.getInfo()
-            except RequestTimeout:
+            except Exception:
                 # It's not terrible if we couldn't fetch the info, but we should log it.
                 WarningMsg("Could not fetch info from SCLang server. Using defaults...")
             else:
@@ -229,18 +220,13 @@ class SCLangServerManager(ServerManager):
                 self.bus = self.num_input_busses + self.num_output_busses
         else:
             self.sclang = OSCClientWrapper()
-            self.sclang.connect( (self.addr, self.SCLang_port))
+            self.sclang.connect((self.addr, self.SCLang_port))
 
         # Clear SuperCollider nodes if any left over from other session etc
-
         self.freeAllNodes()
-
         # Load recorder OSCFunc
-
-        self.loadRecorder() # move to the quark?
-
+        self.loadRecorder()  # move to the quark?
         # Toggle debug in SuperCollider
-
         self.dumpOSC(0)
 
     def __str__(self):
@@ -269,21 +255,13 @@ class SCLangServerManager(ServerManager):
 
     def sendOSC(self, osc_message):
         """ Sends an OSC message to the server. Checks for midi messages """
-        
         if osc_message.address == OSC_MIDI_ADDRESS:
-        
-            self.sclang.send( osc_message )
-        
+            self.sclang.send(osc_message)
         else:
-        
-            self.client.send( osc_message )
-        
+            self.client.send(osc_message)
         # If we are sending other messages as well
-        
         if self.forward is not None:
-            
             self.forward.send(osc_message)
-        
         return
 
     def freeAllNodes(self):
@@ -294,7 +272,7 @@ class SCLangServerManager(ServerManager):
         return
 
     def setFx(self, fx_list):
-        self.fxlist   = fx_list
+        self.fxlist = fx_list
         self.fx_names = {name: fx.synthdef for name, fx in fx_list.items() }
         return
 
@@ -304,313 +282,198 @@ class SCLangServerManager(ServerManager):
 
     def get_midi_message(self, synthdef, packet, timestamp):
         """ Prepares an OSC message to trigger midi sent from SuperCollider """
-
         bundle = OSCBundle(time=timestamp)
-        bundle.setAddress(OSC_MIDI_ADDRESS) # these need to be variable names at least
-
-        msg     = OSCMessage(OSC_MIDI_ADDRESS)
-
-        note    = packet.get("midinote", 60)
-        vel     = min(127, (packet.get("amp", 1) * 128) - 1)
-        sus     = packet.get("sus", 0.5)
+        bundle.setAddress(OSC_MIDI_ADDRESS)  # these need to be variable names at least
+        msg = OSCMessage(OSC_MIDI_ADDRESS)
+        note = packet.get("midinote", 60)
+        vel = min(127, (packet.get("amp", 1) * 128) - 1)
+        sus = packet.get("sus", 0.5)
         channel = packet.get("channel", 0)
-        nudge   = self.midi_nudge
-
-        msg.append( [synthdef, note, vel, sus, channel, nudge] )
-
+        nudge = self.midi_nudge
+        msg.append([synthdef, note, vel, sus, channel, nudge])
         bundle.append(msg)
-
         return bundle
 
-
     def get_init_node(self, node, bus, group_id, synthdef, packet):
-    
         msg = OSCMessage("/s_new")
-
         # Make sure messages release themselves after 8 * the duration at max (temp)
-        
-        max_sus = float(packet["sus"] * 8) # might be able to get rid of this
-        
+        max_sus = float(packet["sus"] * 8)  # might be able to get rid of this
         key = "rate" if synthdef.name in (SamplePlayer, LoopPlayer) else "freq"
-        
         if key in packet:
-        
             value = ["rate", packet[key]]
-        
         else:
-        
             value = []
-        
         osc_packet = ["startSound", node, 0, group_id, 'bus', bus, "sus", max_sus] + value
-
-        msg.append( osc_packet )
-        
+        msg.append(osc_packet)
         return msg, node
 
     def get_control_effect_nodes(self, node, bus, group_id, packet):
-
         pkg = []
-
         # Go through effects and put together with child attributes
-
         for fx in self.fxlist.order[0]:
-
             if fx in packet and packet[fx] != 0:
-
                 # this_effect = effects[fx] # old pre-prepared
-
                 # prepare each effect here
-
                 this_effect = self.prepare_effect(fx, packet)
-
                 # Get next node ID
                 node, last_node = self.nextnodeID(), node
-            
                 msg = OSCMessage("/s_new")
-            
                 osc_packet = [self.fx_names[fx], node, 1, group_id, 'bus', bus] + this_effect
-            
                 msg.append(osc_packet)
-            
                 pkg.append(msg)
-
         return pkg, node
 
     def get_synth_node(self, node, bus, group_id, synthdef, packet):
-        
         msg = OSCMessage("/s_new")
-
         new_message = {}
-
         for key in packet:
-
-            if key not in ("env", "degree"): # skip some attr
-
+            if key not in ("env", "degree"):  # skip some attr
                 try:
-
-                    new_message[key] = float(packet[key]) # is this not already the case?
-
+                    new_message[key] = float(packet[key])  # is this not already the case?
                 except (TypeError, ValueError) as e:
-
-                    WarningMsg( "Could not convert '{}' argument '{}' to float. Set to 0".format( key, packet[key] ))
+                    WarningMsg("Could not convert '{}' argument '{}' to float. Set to 0".format( key, packet[key] ))
                     new_message[key] = 0.0
-
         # Get next node ID
-
         node, last_node = self.nextnodeID(), node
-
         osc_packet = [synthdef.name, node, 1, group_id, synthdef.bus_name, bus] \
             + self.create_osc_msg(new_message)
-
-        msg.append( osc_packet )
-
+        msg.append(osc_packet)
         return msg, node
 
     def get_pre_env_effect_nodes(self, node, bus, group_id, packet):
-
         pkg = []
-
         for fx in self.fxlist.order[1]:
-
             if fx in packet and packet[fx] != 0:
-
                 this_effect = self.prepare_effect(fx, packet)
-
                 # Get next node ID
                 node, last_node = self.nextnodeID(), node
                 msg = OSCMessage("/s_new")
                 osc_packet = [self.fx_names[fx], node, 1, group_id, 'bus', bus] + this_effect
-                msg.append( osc_packet )
+                msg.append(osc_packet)
                 pkg.append(msg)
-    
         return pkg, node
 
     def get_synth_envelope(self, node, bus, group_id, synthdef, packet):
-
-        env_packet = {  "sus" : packet["sus"],
-                        "amp" : packet["amp"] }
+        env_packet = {"sus": packet["sus"],
+                      "amp": packet["amp"]}
 
         for key in ("atk", "decay", "rel", "legato", "curve", "gain"):
-
             # Try and get from the player
-
             value = packet.get(key, None)
-
             # If it is absent or set to None, get default from Synth
-
             if value is None:
-
                 value = synthdef.get_default_env(key)
-
             # Store
-
             env_packet[key] = value
 
         env = synthdef.get_default_env("env") if packet.get("env", None) is None else packet.get("env", None)
-
         try:
-
             dest = env.get_env_name()
-
         except AttributeError as e:
-
             # Set the curve value
-
             env_packet["curve"] = env
             dest = "BasicEnvelope"
-
         node, last_node = self.nextnodeID(), node
         msg = OSCMessage("/s_new")
         osc_packet = [dest, node, 1, group_id, 'bus', bus] + self.create_osc_msg(env_packet)
-        msg.append( osc_packet )
-
+        msg.append(osc_packet)
         return msg, node
 
     def get_post_env_effect_nodes(self, node, bus, group_id, packet):
-
         pkg = []
-
         for fx in self.fxlist.order[2]:
-
             if fx in packet and packet[fx] != 0:
-
                 this_effect = self.prepare_effect(fx, packet)
-
                 # Get next node ID
                 node, last_node = self.nextnodeID(), node
                 msg = OSCMessage("/s_new")
                 osc_packet = [self.fx_names[fx], node, 1, group_id, 'bus', bus] + this_effect
-                msg.append( osc_packet )
+                msg.append(osc_packet)
                 pkg.append(msg)
-
         return pkg, node
 
     def prepare_effect(self, name, packet):
         """ Finds the child attributes in packet and returns an OSC style list """
-        data   = []
+        data = []
         effect = self.fxlist[name]
         for key in effect.args:
-             data.append(key)
-             data.append(float(packet.get(key, effect.defaults[key])))
+            data.append(key)
+            data.append(float(packet.get(key, effect.defaults[key])))
         return data
 
     def get_exit_node(self, node, bus, group_id, packet):
-        
         msg = OSCMessage("/s_new")
         node, last_node = self.nextnodeID(), node
         osc_packet = ['makeSound', node, 1, group_id, 'bus', bus, 'sus', float(packet["sus"])]
-        msg.append( osc_packet )
-
+        msg.append(osc_packet)
         return msg, node
 
     def get_bundle(self, synthdef, packet, timestamp=0):
-        """ Returns the OSC Bundle for a notew based on a Player's SynthDef, and event and effects dictionaries """ 
-
+        """ Returns the OSC Bundle for a notew based on a Player's SynthDef, and event and effects dictionaries """
         # Create a specific message for midi
-
-        if synthdef == "MidiOut": # this should be in a dict of synthdef to functions maybe? we need a "nudge to sync"
-
+        if synthdef == "MidiOut":  # this should be in a dict of synthdef to functions maybe? we need a "nudge to sync"
             return self.get_midi_message(synthdef, packet, timestamp)
-
         # Create a bundle
-        
         bundle = OSCBundle(time=timestamp)
-
         # Get the actual synthdef object
-
         synthdef = self.synthdefs[synthdef]
-
         # Create a group for the note
         group_id = self.nextnodeID()
         msg = OSCMessage("/g_new")
-        msg.append( [group_id, 1, 1] )
-        
+        msg.append([group_id, 1, 1])
         bundle.append(msg)
-
         # Get the bus and SynthDef nodes
-        this_bus  = self.nextbusID()
+        this_bus = self.nextbusID()
         this_node = self.nextnodeID()
-
         # synthdef.preprocess_osc(packet) # so far, just "balance" to multiply amp by 1
-
         # First node of the group (control rate)
-
         msg, this_node = self.get_init_node(this_node, this_bus, group_id, synthdef, packet)
-
-        # Add effects to control rate e.g. vibrato        
-
-        bundle.append( msg )
-
+        # Add effects to control rate e.g. vibrato
+        bundle.append(msg)
         pkg, this_node = self.get_control_effect_nodes(this_node, this_bus, group_id, packet)
-
         for msg in pkg:
-
             bundle.append(msg)
-
         # trigger synth
-
         msg, this_node = self.get_synth_node(this_node, this_bus, group_id, synthdef, packet)
-
         bundle.append(msg)
-
         # ORDER 1
-
         pkg, this_node = self.get_pre_env_effect_nodes(this_node, this_bus, group_id, packet)
-
         for msg in pkg:
-
             bundle.append(msg)
-
         # ENVELOPE
-
         # msg, this_node = self.get_synth_envelope(this_node, this_bus, group_id, synthdef, packet)
-
         # bundle.append( msg )
-
         # ORDER 2 (AUDIO EFFECTS)
-
         pkg, this_node = self.get_post_env_effect_nodes(this_node, this_bus, group_id, packet)
-    
         for msg in pkg:
-    
             bundle.append(msg)
-
         # OUT
-
         msg, _ = self.get_exit_node(this_node, this_bus, group_id, packet)
-
         bundle.append(msg)
-
-        return bundle        
+        return bundle
 
     def send(self, address, message):
         """ Sends message (a list) to SuperCollider """
         msg = OSCMessage(address)
-        
         msg.append(message)
-        
         self.client.send(msg)
-        
         # If we are sending other messages as well
-        
         if self.forward is not None:
-        
             self.forward.send(message)
-        
         return
 
     def free_node(self, node):
         """ Sends a message to SuperCollider to stop a specific node """
         message = OSCMessage("/n_free")
         message.append(node)
-        self.client.send( message )
+        self.client.send(message)
         return
 
     def bufferRead(self, path, bufnum):
         """ Sends a message to SuperCollider to read an audio file into a buffer """
         message = OSCMessage("/b_allocRead")
         message.append([bufnum, path])
-        self.client.send( message )
+        self.client.send(message)
         return
 
     def bufferFree(self, bufnum):
@@ -641,33 +504,23 @@ class SCLangServerManager(ServerManager):
 
     def record(self, fn=None):
         """ Starts recording audio from SuperCollider """
-
         if self._is_recording is False:
-
             if fn is None:
-                
                 fn = "{}.aiff".format(get_timestamp())
-            
             path = os.path.join(RECORDING_DIR, fn)
-
             msg = OSCMessage('/foxdot-record')
             msg.append([1, path])
             self.sclang.send(msg)
-
             self._is_recording = True
-        
         return
 
     def stopRecording(self):
         """ Stops recording audio from SuperCollider """
         if self._is_recording is True:
-            
             msg = OSCMessage('/foxdot-record')
-            msg.append([0, ""]) # flag to stop recording
+            msg.append([0, ""])  # flag to stop recording
             self.sclang.send(msg)
-            
             self._is_recording = False
-        
         return
 
     def loadCompiled(self, fn):
@@ -700,48 +553,31 @@ class SCLangServerManager(ServerManager):
 
     def start(self):
         """ Boots SuperCollider using `subprocess`"""
-
         if not self.booted:
-            
             os.chdir(SC_DIRECTORY)
-            
             print("Booting SuperCollider Server...")
-
             self.daemon = subprocess.Popen([SCLANG_EXEC, '-D', FOXDOT_STARTUP_FILE])
-
             os.chdir(USER_CWD)
-
             self.booted = True
-
         else:
-            
             print("Warning: SuperCollider already running")
-            
         return
 
     def makeStartupFile(self):
         ''' Boot SuperCollider and connect over OSC '''
-
         # 1. Compile startup file
-
         with open(FOXDOT_STARTUP_FILE, 'w') as startup:
-
             startup.write('''Routine.run {
             s.options.blockSize = 128;
             s.options.memSize = 131072;
             s.bootSync();\n''')
-
             files = [FOXDOT_OSC_FUNC, FOXDOT_BUFFERS_FILE]
             files = files + GET_SYNTHDEF_FILES() + GET_FX_FILES()
-            
             for fn in files:
-
                 f = open(fn)
                 startup.write(f.read())
                 startup.write("\n\n")
-
             startup.write("};")
-
         return
 
     def quit(self):
@@ -755,12 +591,11 @@ class SCLangServerManager(ServerManager):
 
     def add_forward(self, addr, port):
         self.forward = OSCClientWrapper()
-        self.forward.connect( (addr, port) )
+        self.forward.connect((addr, port))
+
 
 try:
-    
     import socketserver
-
 except ImportError:
 
     import SocketServer as socketserver
@@ -770,29 +605,34 @@ class Message:
     """ Wrapper for JSON messages sent to the server """
     def __init__(self, data):
         self.data = data
+
     def __str__(self):
         """ Prepares the json message to be sent with first 4 digits
             denoting the length of the message """
-        packet = str(json.dumps(self.data, separators=(',',':')))
-        length = "{:04d}".format( len(packet) )
+        packet = str(json.dumps(self.data, separators=(',', ':')))
+        length = "{:04d}".format(len(packet))
         return length + packet
+
     def __len__(self):
         return len(str(self))
+
     def asString(self):
         return str(self)
+
 
 def read_from_socket(sock):
     """ Reads data from the socket """
     # Get number single int that tells us how many digits to read
     try:
         bits = int(sock.recv(4).decode())
-    except:
+    except Exception:
         return None
     if bits > 0:
         # Read the remaining data (JSON)
         data = sock.recv(bits).decode()
         # Convert back to Python data structure
         return json.loads(data)
+
 
 def send_to_socket(sock, data):
     """ Converts Python data structure to JSON message and
@@ -807,45 +647,39 @@ def send_to_socket(sock, data):
         sent += bits
     return
 
+
 class ThreadedServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     """ Base class """
     pass
 
+
 class TempoServer(ThreadedServer):
-    """ Used in TempoClock.py to connect to instances of FoxDot over a network. Sends
-        bpm changes over the network. On initial request this sends the start_time value
-        of the clock """
+    """
+    Used in TempoClock.py to connect to instances of FoxDot over a network. Sends
+    bpm changes over the network. On initial request this sends the start_time value
+    of the clock
+    """
 
     def __init__(self, clock, port=57999):
         # tempo clock
-        RequestHandler.metro  = self.metro = clock
+        RequestHandler.metro = self.metro = clock
         RequestHandler.master = self
-
         # Address information
         self.hostname = str(socket.gethostname())
-
         # Listen on any IP
-        self.ip_addr  = "0.0.0.0"
-        self.port     = int(port)
-
+        self.ip_addr = "0.0.0.0"
+        self.port = int(port)
         # Public ip for server is the first IPv4 address we find, else just show the hostname
         self.ip_pub = self.hostname
-        
         try:
-
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.connect(("8.8.8.8", 80))
             self.ip_pub = s.getsockname()[0]
             s.close()
-
         except OSError:
-
             pass
-
         # Instantiate server process
-
         self.peers = []
-
         ThreadedServer.__init__(self, (self.ip_addr, self.port), RequestHandler)
         self.server_thread = Thread(target=self.serve_forever)
         self.server_thread.daemon = False
@@ -878,59 +712,39 @@ class TempoServer(ThreadedServer):
         self.server_close()
         return
 
+
 class RequestHandler(socketserver.BaseRequestHandler):
-    """ Created whenever a new connection to the server is made:
-        self.request = socket
-        self.server  = Server instance
-        self.client_address = (address, port)
+    """
+    Created whenever a new connection to the server is made:
+    self.request = socket
+    self.server  = Server instance
+    self.client_address = (address, port)
     """
     master = None
 
     def handle(self):
         """ Overload """
-
         print("New connection from {}".format(self.client_address))
-
         # First we get latency
-
         data = read_from_socket(self.request)
-
         # Should be "init" message
-
         assert "init" in data
-
         send_to_socket(self.request, {"clock_time": time.time()}) # maybe time at a beat?
-
         self.master.peers.append(self)
-
         while True:
-
             data = read_from_socket(self.request)
-
             # If a client disconnects, remove and print message
-
             if data is None:
-
                 return self.disconnect()
-
             else:
-
                 # Get the requested data and send to client
-
                 if "request" in data:
-
                     send_to_socket(self.request, self.metro.get_sync_info())
-
                 # Tell server to update tempo and update clients
-
                 elif "new_bpm" in data:
-
                     self.master.update_tempo(self, **data["new_bpm"])
-
                 elif "latency":
-
                     send_to_socket(self.request, ["latency"])
-
         return
 
     def disconnect(self):
@@ -940,71 +754,51 @@ class RequestHandler(socketserver.BaseRequestHandler):
         return 0
 
     def update_tempo(self, bpm, bpm_start_beat, bpm_start_time):
-
         data = {
-            "new_bpm" :
+            "new_bpm":
                 {
-                    "bpm" : bpm,
-                    "bpm_start_time" : bpm_start_time,
-                    "bpm_start_beat" : bpm_start_beat
+                    "bpm": bpm,
+                    "bpm_start_time": bpm_start_time,
+                    "bpm_start_beat": bpm_start_beat
+                }
             }
-        }
-
         send_to_socket(self.request, data)
-
         return
 
 
 class TempoClient:
     def __init__(self, clock):
         self.metro = clock
-
         self.sync_keys = ("bpm_start_beat", "bpm_start_time", "bpm")
-
         self.server_hostname = None
-        self.server_port     = None
-        self.server_address  = None
-        
-        self.socket   = None
+        self.server_port = None
+        self.server_address = None
+        self.socket = None
 
     def connect(self, hostname, port=57890):
         """ Connects to the server instance """
-
         # Get details of remote
         self.server_hostname = hostname
-        self.server_port     = int(port)
-        self.server_address  = (self.server_hostname, self.server_port)
-
+        self.server_port = int(port)
+        self.server_address = (self.server_hostname, self.server_port)
         # Connect to remote
-
         try:
-
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
             self.socket.connect(self.server_address)
-
         except Exception as e:
-
             raise(e)
-
-            raise(ConnectionError("Could not connect to host '{}'".format( self.server_hostname ) ) )
-
+            raise(ConnectionError("Could not connect to host '{}'".format(self.server_hostname)))
         # connect to the server and listen for new updates for the tempo-clock
-
         self.listening = True
         self.daemon = Thread(target=self.listen)
         self.daemon.start()
-
         # Send init message
         self.start_time = None
-        self.stop_time  = None
-        self.latency    = None
+        self.stop_time = None
+        self.latency = None
         self.recording_latency = False
-
         send_to_socket(self.socket, ["init"])
-        
         self.start_timing()
-
         return self
 
     def start_timing(self):
@@ -1035,57 +829,41 @@ class TempoClient:
         """ Listens out for data coming from the server and passes it on
             to the handler.
         """
-        
         # First message is machine clock time
-
         time_data = read_from_socket(self.socket)
-
         self.stop_timing()
-
         # self.metro.calculate_nudge(time_data["clock_time"], self.stop_time, self.latency)
         self.metro.calculate_nudge(time_data["clock_time"], self.start_time, self.latency)
-        
         # Enter loop
-
         while self.listening:
-            
             data = read_from_socket(self.socket)
-
             # Might be recording latency
-
             if self.recording_latency:
-
                 self.stop_timing()
                 self.recording_latency = False
-            
             if data is None:
                 break
-            
-            if "sync" in data:
 
+            if "sync" in data:
                 for key in self.sync_keys:
                     if key in data["sync"]:
                         object.__setattr__(self.metro, key, data["sync"][key])
-
                 self.metro.update_tempo_from_connection(**data["sync"])
-
                 self.metro.flag_wait_for_sync(False)
-            
             elif "new_bpm" in data:
-
                 self.metro.update_tempo_from_connection(**data["new_bpm"])
         return
 
     def update_tempo(self, bpm, bpm_start_beat, bpm_start_time):
         """ Sends data to other connected FoxDot instances to update their tempo """
         data = {
-            "new_bpm" :
+            "new_bpm":
                 {
-                    "bpm" : bpm,
-                    "bpm_start_time" : bpm_start_time,
-                    "bpm_start_beat" : bpm_start_beat
+                    "bpm": bpm,
+                    "bpm_start_time": bpm_start_time,
+                    "bpm_start_beat": bpm_start_beat
+                }
             }
-        }
         return self.send(data)
 
     def kill(self):
@@ -1096,11 +874,8 @@ class TempoClient:
 
 
 if __name__ != "__main__":
-
     from .Settings import ADDRESS, PORT, PORT2, FORWARD_PORT, FORWARD_ADDRESS
-
     # DefaultServer = SCLangServerManager(ADDRESS, PORT, PORT2)
     Server = SCLangServerManager(ADDRESS, PORT, PORT2)
-
     if FORWARD_PORT and FORWARD_ADDRESS:
         Server.add_forward(FORWARD_ADDRESS, FORWARD_PORT)

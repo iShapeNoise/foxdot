@@ -49,8 +49,8 @@ from .foxdot_func_cmp import *
 from threading import Thread
 from time import sleep
 
-class _whenStatement:
 
+class _whenStatement:
     namespace = {}
 
     def __init__(self, func=lambda: True):
@@ -88,7 +88,7 @@ class _whenStatement:
             if not self.do_switch:
 
                 self.action()
-                    
+
                 self.toggle_live_functions(True)
                 self.do_switch = True
                 self.elsedo_switch = False
@@ -102,33 +102,33 @@ class _whenStatement:
                 self.elsedo_switch = True
 
     def toggle_live_functions(self, switch):
-        """ If the action functions are @livefunctions, turn them on/off """    
+        """ If the action functions are @livefunctions, turn them on/off """
         try:
             self.action.live = switch
-        except:
+        except Exception:
             pass
         try:
             self.notaction.live = (not switch)
-        except:
+        except Exception:
             pass
         return
 
     def when(self, func):
         self.expr = func
         return self
-                
+
     def then(self, func):
         ''' Set the instructions for when the test expression is True. Should
             be a list of strings. '''
         self.action = func
         return self
-    
+
     def elsedo(self, func):
         ''' Set the instructions for when the test expression is False. Should
             be a list of strings. '''
         self.notaction = func
         return self
-    
+
     def stop(self):
         self.reset()
         return self
@@ -138,14 +138,16 @@ class _whenStatement:
         self.remove_me = True
         return self
 
+
 class _whenLibrary:
-    """  Used to store 'when statements'. Is accessed through the `__when__` object.
     """
-    
+    Used to store 'when statements'. Is accessed through the `__when__` object.
+    """
+
     def __init__(self):
         self.library = {}
         self.editing = None
-        
+
     def start_thread(self):
         self.thread = Thread(target=self.run)
         self.thread.daemon = True
@@ -165,59 +167,43 @@ class _whenLibrary:
         """ Continual loop evaluating when_statements
         """
         while len(self.library) > 0:
-            
             for name, expression in self.library.items():
-
-                if expression.remove_me == True:
-
+                if expression.remove_me is True:
                     del self.library[name]
-
                 else:
-
                     expression.evaluate()
-
             sleep(0.01)
-
         return
-        
+
     def __call__(self, name, **kwargs):
         """ Calling when() with no arguments will evaluate all expressions
             stored in self.library. Calling with func as a valid function
             will see if the function is in self.library and add it if not,
             or update do  / elsedo
+        """
 
-        """   
-            
         if name in self.library:
-
             return self.library[name]
-
         else:
-
             # Make a new statement
-
             self.library[name] = _whenStatement()
-
             # If that is the first statement, start the thread
-
             if len(self.library) == 1:
-
                 self.start_thread()
-
             # Return the last added expression
-
             return self.library[name]
 
     # what do these do?
-
     def a(self, expr):
         if self.editing is not None:
-            self.editing.when(expr)            
+            self.editing.when(expr)
         return None
+
     def b(self, expr):
         if self.editing is not None:
             self.editing.do(expr)
         return None
+
     def c(self, expr):
         if self.editing is not None:
             self.editing.elsedo(expr)
@@ -227,5 +213,6 @@ class _whenLibrary:
         """ Clears the library and stop scheduling """
         self.library = {}
         return self
+
 
 when = _whenLibrary()

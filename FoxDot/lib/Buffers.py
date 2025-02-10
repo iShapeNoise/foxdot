@@ -23,7 +23,7 @@ from .Code import WarningMsg
 from .Logging import Timing
 from .SCLang import SampleSynthDef
 from .ServerManager import Server
-from .Settings import FOXDOT_SND, FOXDOT_LOOP, SAMPLES_DB
+from .Settings import FOXDOT_SND, FOXDOT_LOOP, SAMPLES_PACK_NUMBER
 
 
 alpha = "abcdefghijklmnopqrstuvwxyz"
@@ -96,8 +96,7 @@ DESCRIPTIONS = {'a': "Gameboy hihat",       'A': "Gameboy kick drum",
                 '3': 'Vocals (Three)',
                 '4': 'Vocals (Four)'}
 
-sdb = SAMPLES_DB
-
+spack = SAMPLES_PACK_NUMBER
 
 # Function-like class for searching directory for sample based on symbol
 class _symbolToDir:
@@ -116,18 +115,18 @@ class _symbolToDir:
             raise OSError("{!r} is not a valid directory".format(root))
         return
 
-    def __call__(self, symbol, sdb):
+    def __call__(self, symbol, spack):
         """ Return the sample search directory for a symbol """
         if symbol.isalpha():
             return join(
                 self.root,
-                str(sdb),
+                str(spack),
                 symbol.lower(),
                 'upper' if symbol.isupper() else 'lower'
             )
         elif symbol in nonalpha:
             longname = nonalpha[symbol]
-            return join(self.root, str(sdb), '_', longname)
+            return join(self.root, str(spack), '_', longname)
         else:
             return None
 
@@ -168,9 +167,9 @@ class BufferManager(object):
         self._nextbuf = 1
         self._buffers = [None for _ in range(self._max_buffers)]
         self._fn_to_buf = {}
-        self._paths = [join(FOXDOT_SND, str(sdb), FOXDOT_LOOP)] + list(paths)
+        self._paths = [join(FOXDOT_SND, str(spack), FOXDOT_LOOP)] + list(paths)
         self._ext = ['wav', 'wave', 'aif', 'aiff', 'flac']
-        self.loops = [fn.rsplit(".", 1)[0] for fn in os.listdir(join(FOXDOT_SND, str(sdb), FOXDOT_LOOP))]
+        self.loops = [fn.rsplit(".", 1)[0] for fn in os.listdir(join(FOXDOT_SND, str(spack), FOXDOT_LOOP))]
 
     def __str__(self):
         return "\n".join(["%r: %s" % (k, v) for k, v in sorted(DESCRIPTIONS.items())])
@@ -245,11 +244,11 @@ class BufferManager(object):
         self._max_buffers = max_buffers
         self._nextbuf = self._nextbuf % max_buffers
 
-    def getBufferFromSymbol(self, symbol, sdb, index=0):
+    def getBufferFromSymbol(self, symbol, spack, index=0):
         """ Get buffer information from a symbol """
         if symbol.isspace():
             return nil
-        dirname = symbolToDir(symbol, sdb)
+        dirname = symbolToDir(symbol, spack)
         if dirname is None:
             return nil
         samplepath = self._findSample(dirname, index)
@@ -448,11 +447,11 @@ class LoopSynthDef(SampleSynthDef):
         SampleSynthDef.__init__(self, "loop")
         self.pos = self.new_attr_instance("pos")
         self.sample = self.new_attr_instance("sample")
-        self.sdb = self.new_attr_instance("sdb")
+        self.spack = self.new_attr_instance("spack")
         self.beat_stretch = self.new_attr_instance("beat_stretch")
         self.defaults['pos'] = 0
         self.defaults['sample'] = 0
-        self.defaults['sdb'] = sdb
+        self.defaults['spack'] = spack
         self.defaults['beat_stretch'] = 0
         self.base.append("rate = (rate * (1-(beat_stretch>0))) + ((BufDur.kr(buf) / sus) * (beat_stretch>0));")
         self.base.append("osc = PlayBuf.ar(2, buf, BufRateScale.kr(buf) * rate, startPos: BufSampleRate.kr(buf) * pos, loop: 1.0);")
@@ -483,7 +482,7 @@ class StretchSynthDef(SampleSynthDef):
         return proxy
 
 # join(FOXDOT_SND,
-#      str(sdb),
+#      str(spack),
 #      FOXDOT_LOOP + filename)
 
 class GranularSynthDef(SampleSynthDef):
@@ -492,10 +491,10 @@ class GranularSynthDef(SampleSynthDef):
         SampleSynthDef.__init__(self, "gsynth")
         self.pos = self.new_attr_instance("pos")
         self.sample = self.new_attr_instance("sample")
-        self.sdb = self.new_attr_instance("sdb")
+        self.spack = self.new_attr_instance("spack")
         self.defaults['pos'] = 0
         self.defaults['sample'] = 0
-        self.defaults['sdb'] = sdb
+        self.defaults['spack'] = spack
         self.base.append("osc = PlayBuf.ar(2, buf, BufRateScale.kr(buf) * rate, startPos: BufSampleRate.kr(buf) * pos);")
         self.base.append("osc = osc * EnvGen.ar(Env([0,1,1,0],[0.05, sus-0.05, 0.05]));")
         self.osc = self.osc * self.amp

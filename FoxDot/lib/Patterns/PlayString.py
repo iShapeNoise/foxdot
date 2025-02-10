@@ -3,34 +3,37 @@ from __future__ import absolute_import, division, print_function
 import re
 from random import shuffle, choice
 
-re_nests  = r"\((.*?)\)"
+re_nests = r"\((.*?)\)"
 re_square = r"\[.*?\]"
-re_curly  = r"\{.*?\}"
-re_chars  = r"[^[\](){}]"
-br_pairs = {"(":")",
-            ")":"(",
-            "[":"]",
-            "]":"[",
-            "{":"}",
-            "}":"{"}
+re_curly = r"\{.*?\}"
+re_chars = r"[^[\](){}]"
+br_pairs = {"(": ")", ")": "(", "[": "]", "]": "[", "{": "}", "}": "{"}
+
 
 class ParseError(Exception):
     pass
 
+
 class PlayString:
     """ Container for character objects """
     contains_nest = False
+
     def __init__(self, string):
-        self.string   = list(string)
+        self.string = list(string)
         self.original = str(string)
+
     def __repr__(self):
         return repr(self.string)
+
     def __len__(self):
         return len(self.string)
+
     def __getitem__(self, key):
         return self.string[key]
+
     def __setitem__(self, key, value):
         self.string[key] = value
+
     def index(self, sub, start=0):
         """ Returns the index of the closing bracket """
         br = "([{<"[")]}>".index(sub)]

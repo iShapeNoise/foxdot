@@ -156,11 +156,10 @@ class SynthDefBaseClass(object):
         try:
             if key in self.var + list(self.defaults.keys()):
                 self.attr.append((key, value))
-        except:
+        except Exception:
             pass
         if key not in self.__dict__ or str(key) != str(value):
             self.__dict__[key] = value
-
 
     # Defining class behaviour
     # ------------------------
@@ -199,17 +198,14 @@ class SynthDefBaseClass(object):
 
     # Adding the SynthDef to the Server
     # ---------------------------------
-
     def write(self):
         """  Writes the SynthDef to file """
-
         # 1. See if the file exists
         if os.path.isfile(self.filename):
             with open(self.filename) as f:
                 contents = f.read()
         else:
             contents = ""
-
         # 2. If it does, check contents
         this_string = self.__str__()
         if contents != this_string:
@@ -218,15 +214,14 @@ class SynthDefBaseClass(object):
                     f.write(this_string)
             except IOError:
                 # print("Warning: Unable to update '{}' SynthDef.".format(self.name))
-                pass  # TODO - add python -m --verbose to print warnings?
-
+                pass  # ToDo - add python -m --verbose to print warnings?
         return
 
     def has_envelope(self):
         try:
             object.__getattribute__(self, 'env')
             return True
-        except:
+        except Exception:
             return False
 
     def load(self):

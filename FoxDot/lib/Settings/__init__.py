@@ -1,16 +1,13 @@
-from __future__ import absolute_import, division, print_function
 import os
 import sys
-
+import pathlib
 # Anything that needs to be updated
-PY_VERSION = sys.version_info[0]
+from importlib import reload
 
-# Any Py2to3
-if PY_VERSION == 2:
-    range = xrange
-    input = raw_input
-else:
-    from importlib import reload
+try:
+    from FoxDotEditor.EditorSettings import FOXDOT_EDITOR_ROOT
+except ImportError:
+    FOXDOT_EDITOR_ROOT = os.path.realpath(__file__ + "/../../../../FoxDotEditor/FoxDotEditor")
 
 # Check for OS -> mac, linux, win
 SYSTEM = 0
@@ -31,7 +28,6 @@ elif sys.platform.startswith('win'):
 elif sys.platform.startswith('linux'):
     SYSTEM = LINUX
 
-
 # Directory informations
 USER_CWD = os.path.realpath(".")
 FOXDOT_ROOT = os.path.realpath(__file__ + "/../../../")
@@ -41,6 +37,9 @@ FOXDOT_HELLO = os.path.realpath(FOXDOT_ROOT + "/lib/Workspace/img/hello.txt")
 FOXDOT_STARTUP_PATH = os.path.realpath(FOXDOT_ROOT + "/lib/Custom/startup.py")
 FOXDOT_SND = os.path.realpath(FOXDOT_ROOT + "/snd/")
 FOXDOT_LOOP = "_loop_/"
+FOXDOT_EDITOR_ROOT = os.path.realpath(FOXDOT_ROOT + "/lib/Workspace/")
+FOXDOT_EDITOR_THEMES = os.path.realpath(FOXDOT_EDITOR_ROOT + "/themes/themes.json")
+FOXDOT_MIDI_MAPS = os.path.realpath(FOXDOT_ROOT + "/lib/MidiMaps")
 
 SCLANG_EXEC = 'sclang.exe' if SYSTEM == WINDOWS else 'sclang'
 SYNTHDEF_DIR = os.path.realpath(FOXDOT_ROOT + "/osc/scsyndef/")
@@ -57,6 +56,7 @@ FOXDOT_INFO_FILE = os.path.realpath(FOXDOT_ROOT + "/osc/Info.scd")
 FOXDOT_RECORD_FILE = os.path.realpath(FOXDOT_ROOT + "/osc/Record.scd")
 FOXDOT_TEMP_FILE = os.path.realpath(FOXDOT_ROOT + "/lib/Workspace/tmp/tempfile.txt")
 
+
 # If the tempfile doesn't exist, create it
 if not os.path.isfile(FOXDOT_TEMP_FILE):
     try:
@@ -67,11 +67,11 @@ if not os.path.isfile(FOXDOT_TEMP_FILE):
 
 
 def GET_SYNTHDEF_FILES():
-    return [os.path.realpath(SYNTHDEF_DIR + "/" + path) for path in os.listdir(SYNTHDEF_DIR)]
+   return [os.path.realpath(SYNTHDEF_DIR + "/" + path) for path in os.listdir(SYNTHDEF_DIR)]
 
 
 def GET_FX_FILES():
-    return [os.path.realpath(EFFECTS_DIR + "/" + path) for path in os.listdir(EFFECTS_DIR)]
+   return [os.path.realpath(EFFECTS_DIR + "/" + path) for path in os.listdir(EFFECTS_DIR)]
 
 
 def GET_TUTORIAL_FILES():
@@ -84,18 +84,24 @@ try:
 except NameError:
     from . import conf
 
-FOXDOT_CONFIG_FILE = conf.filename
 
+FOXDOT_CONFIG_FILE = conf.filename
 ADDRESS = conf.ADDRESS
 PORT = conf.PORT
 PORT2 = conf.PORT2
 FONT = conf.FONT
+BOOT_ON_STARTUP = conf.BOOT_ON_STARTUP
+SUPERCOLLIDER = conf.SUPERCOLLIDER
 SC3_PLUGINS = conf.SC3_PLUGINS
 MAX_CHANNELS = conf.MAX_CHANNELS
 GET_SC_INFO = conf.GET_SC_INFO
 USE_ALPHA = conf.USE_ALPHA
 ALPHA_VALUE = conf.ALPHA_VALUE
 MENU_ON_STARTUP = conf.MENU_ON_STARTUP
+CONSOLE_ON_STARTUP = conf.CONSOLE_ON_STARTUP
+LINENUMBERS_ON_STARTUP = conf.LINENUMBERS_ON_STARTUP
+TREEVIEW_ON_STARTUP = conf.TREEVIEW_ON_STARTUP
+MIDIBAR_ON_STARTUP = conf.MIDIBAR_ON_STARTUP
 TRANSPARENT_ON_STARTUP = conf.TRANSPARENT_ON_STARTUP
 RECOVER_WORK = conf.RECOVER_WORK
 CHECK_FOR_UPDATE = conf.CHECK_FOR_UPDATE
@@ -105,7 +111,9 @@ CPU_USAGE = conf.CPU_USAGE
 CLOCK_LATENCY = conf.CLOCK_LATENCY
 FORWARD_ADDRESS = conf.FORWARD_ADDRESS
 FORWARD_PORT = conf.FORWARD_PORT
-SAMPLES_DB = conf.SAMPLES_DB
+SAMPLES_DIR = conf.SAMPLES_DIR
+SAMPLES_PACK_NUMBER = conf.SAMPLES_PACK_NUMBER
+COLOR_THEME = conf.COLOR_THEME
 
 if conf.SAMPLES_DIR is not None and conf.SAMPLES_DIR != "":
     FOXDOT_SND = os.path.realpath(conf.SAMPLES_DIR)
@@ -118,7 +126,7 @@ def get_timestamp():
 
 # Name of SamplePlayer and LoopPlayer SynthDef
 class _SamplePlayer:
-    names = ('play1', 'play2')
+    names = ('play1', 'play2',)
 
     def __eq__(self, other):
         return other in self.names
@@ -156,6 +164,7 @@ OSC_MIDI_ADDRESS = "/foxdot_midi"
 
 # Colours
 class COLOURS:
+    # Text area colours
     plaintext = conf.plaintext
     background = conf.background
     functions = conf.functions
@@ -168,6 +177,12 @@ class COLOURS:
     dollar = conf.dollar
     arrow = conf.arrow
     players = conf.players
+    prompt_fg = conf.prompt_fg
+    prompt_bg = conf.prompt_bg
+    # Console area colours
+    console_text = conf.console_text
+    console_bg = conf.console_bg
+    # Sample chart colours
     kick = conf.kick
     various = conf.various
     vocal = conf.vocal

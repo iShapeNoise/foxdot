@@ -1,16 +1,13 @@
 from __future__ import absolute_import, division, print_function
-
 from ..ServerManager import BidirectionalOSCServer, OSCMessage
+
 
 class EspGrid:
     def __init__(self, address=("localhost", 5510), clock=None):
-
         self.server_address = address
         self.metro = clock
-
         self.server = BidirectionalOSCServer(("0.0.0.0", 0))
         self.server.connect(self.server_address)
-        
         self.server.addMsgHandler('/reset', self._reset_clock)
 
     def __repr__(self):
@@ -30,7 +27,6 @@ class EspGrid:
         return self.server.receive("/esp/clockMode/r")
 
     # Retrieve tempo information
-
     def query(self):
         self.server.send(OSCMessage("/esp/clock/q"))
         return self.server.receive("/esp/clock/r")
@@ -46,7 +42,6 @@ class EspGrid:
         return self.server.receive("/esp/tempoCPU/r")
 
     # Setting tempo data
-
     def toggle_tempo(self, flag):
         message = OSCMessage("/esp/beat/on")
         message.append(flag)
@@ -69,7 +64,6 @@ class EspGrid:
         return float("{}.{}".format(sec, nano))
 
     # Subcription to immediate messages
-
     def subscribe(self):
         message = OSCMessage("/esp/subscribe")
         return self.server.send(message)
@@ -79,7 +73,6 @@ class EspGrid:
         return self.server.send(message)
 
     # Identification
-
     def set_name(self, name):
         message = OSCMessage("/esp/person/s")
         message.append(str(name))
@@ -117,4 +110,3 @@ class EspGrid:
     # Receiving
     def recv(self, pattern):
         return self.server.receive(pattern)
-

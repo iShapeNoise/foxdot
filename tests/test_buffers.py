@@ -9,12 +9,13 @@ from FoxDot.lib.Buffers import BufferManager
 
 
 class TestSampleSearch(unittest.TestCase):
-
     """ Test search functionality for sample files """
     def setUp(self):
         super(TestSampleSearch, self).setUp()
+
         def mkdir(dirname):
             os.mkdir(join(self.wd, dirname))
+
         def touch(filename):
             fullpath = join(self.wd, filename)
             open(fullpath, 'w').close()
