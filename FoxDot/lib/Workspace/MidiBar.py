@@ -1,9 +1,9 @@
-from FoxDotEditor.tkimport import *
+from .tkimport import *
 import time
 from threading import Thread
 from renardo_lib.Utils import midi_cmd
 from renardo_lib.Settings import *
-from FoxDotEditor.Format import *
+from .Format import *
 
 
 class MidiBar:
