@@ -111,7 +111,7 @@ try:
                 console_text = item[COLOR_THEME]["colors"]["inputfg"]
                 console_bg = item[COLOR_THEME]["colors"]["inputbg"]
 except FileNotFoundError:
-    print(f"{os.path.join(FOXDOT_EDITOR_THEMES, 'themes.json')} themes file not found! Use default values instead.")
+    print(f"{FOXDOT_EDITOR_THEMES}: File not found! Use default values instead.")
 # Text area colours
 # ------------------
 plaintext = '#ffffff'
