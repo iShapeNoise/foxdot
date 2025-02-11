@@ -54,6 +54,7 @@ class workspace:
         CodeClass.namespace['Player'].widget = self
         self.version = this_version = CodeClass.namespace['__version__']
         pypi_version = get_pypi_version()
+
         def check_versions():
             # if pypi_version is not None and VersionNumber(pypi_version) > VersionNumber(this_version):
             #     tkMessageBox.showinfo("New version available", "There is a new version of FoxDot available from PyPI. Upgrade by going to your command prompt and running:\n\npip install FoxDot --upgrade")
@@ -65,9 +66,13 @@ class workspace:
         self.root = tb.Window()
         self.root.title("FoxDot >> Distro PitchGlitch")
         self.root.minsize(800, 600)
-        self.width = 1024
-        self.height = 576
-        self.root.geometry(f"{self.width}x{self.height}")
+        width = 1280
+        height = 720
+        ws = self.root.winfo_screenwidth()
+        hs = self.root.winfo_screenheight()
+        x = (ws / 2) - (width / 2)
+        y = (hs / 2) - (height / 2)
+        self.root.geometry('%dx%d+%d+%d' % (width, height, x, y))
         self.root.rowconfigure(0, weight=1)  # Text box
         self.root.rowconfigure(1, weight=0)  # Search box
         self.root.rowconfigure(2, weight=0)  # Separator
