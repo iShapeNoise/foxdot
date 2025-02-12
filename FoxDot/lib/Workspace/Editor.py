@@ -68,11 +68,8 @@ class workspace:
         self.root.minsize(800, 600)
         width = 1280
         height = 720
-        ws = self.root.winfo_screenwidth()
-        hs = self.root.winfo_screenheight()
-        x = (ws / 2) - (width / 2)
-        y = (hs / 2) - (height / 2)
-        self.root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+        self.root.geometry(f"{width}x{height}")
+        self.root.eval('tk::PlaceWindow . center')
         self.root.rowconfigure(0, weight=1)  # Text box
         self.root.rowconfigure(1, weight=0)  # Search box
         self.root.rowconfigure(2, weight=0)  # Separator
