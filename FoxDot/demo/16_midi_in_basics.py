@@ -102,10 +102,10 @@ midi.set_value("U0:E5", "Group", ["U0:E0", "U0:E1", "U0:E2"])
 print(valmap)
 
 # Save modified template file to reload it, whenever you use this device with your composition
-midi.save_valmap("/home/bbscar/Projects/Music/Renardo_Dev/MidiIn/MidiMax_ValMap_Set.json")
+midi.save_valmap("/path/to/valmap.json")
 
 # Load a ValMap
-valmap = midi.load_valmap("/home/bbscar/Projects/Music/Renardo_Dev/MidiIn/MidiMax_ValMap_Set.json")
+valmap = midi.load_valmap("/path/to/valmap.json")
 
 # The midi functionality is set to work with all gui environment (well, that it what it suppose to do, please comment)
 
