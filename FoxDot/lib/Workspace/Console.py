@@ -70,7 +70,7 @@ class console:
         self.canvas_height = 0
         # Draw logo
         # self.draw_logo()
-        self.hello_msg = "System booted 'PitchGlitch' Distro of FoxDot! Press Ctrl/Cmd + H for help."
+        self.hello_msg = "System booted 'PitchGlitch' Branch of FoxDot! Press Ctrl/Cmd + H for help."
         self.hello_lines = "-" * len(self.hello_msg)
         self.hello_txt = f"{self.hello_msg}\n{self.hello_lines}\n"
         # Create text

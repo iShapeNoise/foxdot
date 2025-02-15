@@ -55,4 +55,9 @@ setup(name='FoxDot',
                                'README.md',
                                ],
                     'FoxDot.lib.Workspace': ['img/*', 'tmp/*'],
-                    'FoxDot.lib.Settings': ['conf.json']})
+                    'FoxDot.lib.Settings': ['conf.json']},
+      install_requires=[
+          'ttkbootstrap',
+          'python-rtmidi',
+          'soundplay']
+      )

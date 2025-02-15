@@ -64,7 +64,7 @@ class workspace:
         # self.style = tb.Style(theme="cyborg", themes_file=FOXDOT_EDITOR_THEMES+"themes.json")
         # Set up master widget
         self.root = tb.Window()
-        self.root.title("FoxDot >> Distro PitchGlitch")
+        self.root.title("FoxDot >> Branch PitchGlitch")
         self.root.minsize(800, 600)
         width = 1280
         height = 720
