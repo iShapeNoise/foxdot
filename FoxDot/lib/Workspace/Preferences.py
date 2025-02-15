@@ -741,11 +741,10 @@ class Preferences:
                                        parent=self.stop)
         self.stop.lift(aboveThis=None)
         if answer:
-            return self.save_changes()
+            self.save_changes()
         else:
             pass
-        return self.stop.destroy()
-        pass
+        self.stop.destroy()
 
     def save_changes(self):
         self.text_settings = self.textbox.get("1.0", "end-1c")
@@ -787,7 +786,6 @@ class Preferences:
             self.settings['FORWARD_ADDRESS'] = self.fwd_address.get()
             self.settings['FORWARD_PORT'] = int(self.fwd_port.get())
             self.settings['COLOR_THEME'] = self.theme.get()
-            self.settings['TEXT_COLORS'] = self.text_theme.get()
         settings_file = open(self.conf_json, "w")
         json.dump(self.settings, settings_file, indent=6)
         settings_file.close()

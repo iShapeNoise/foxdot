@@ -112,28 +112,28 @@ try:
                 console_bg = item[COLOR_THEME]["colors"]["inputbg"]
 except FileNotFoundError:
     print(f"{FOXDOT_EDITOR_THEMES}: File not found! Use default values instead.")
-# Text area colours
-# ------------------
-plaintext = '#ffffff'
-background = '#1a1a1a'
-functions = '#bf4acc'
-key_types = '#29abe2'
-user_defn = '#29abe2'
-other_kws = '#49db8b'
-comments = '#666666'
-numbers = '#e89c18'
-strings = '#eae02a'
-dollar = '#ec4e20'
-arrow = '#eae02a'
-players = '#ec4e20'
-# Prompt colours
-# ------------------
-prompt_fg = '#4d4d4d'
-prompt_bg = '#666666'
-# Console area colours
-# ------------------
-console_text = '#ffffff'
-console_bg = '#000000'
+    # Text area colours
+    # ------------------
+    plaintext = '#ffffff'
+    background = '#1a1a1a'
+    functions = '#bf4acc'
+    key_types = '#29abe2'
+    user_defn = '#29abe2'
+    other_kws = '#49db8b'
+    comments = '#666666'
+    numbers = '#e89c18'
+    strings = '#eae02a'
+    dollar = '#ec4e20'
+    arrow = '#eae02a'
+    players = '#ec4e20'
+    # Prompt colours
+    # ------------------
+    prompt_fg = '#4d4d4d'
+    prompt_bg = '#666666'
+    # Console area colours
+    # ------------------
+    console_text = '#ffffff'
+    console_bg = '#000000'
 
 # Sound category colours
 # ------------------
