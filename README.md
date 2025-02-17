@@ -16,7 +16,7 @@ There is momentarily no pip package for this branch, so you will need to install
 it via setup.py
 
 
-### v0.9.0 branch "PitchGlitch"
+### v0.9.13 branch "PitchGlitch"
 
 New features:
 
