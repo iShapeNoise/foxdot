@@ -155,7 +155,7 @@ class workspace:
                                  pady=5,
                                  bg=colour_map['background'],
                                  fg=colour_map['plaintext'],
-                                 insertbackground="White",
+                                 insertbackground="white",
                                  font=self.codefont,
                                  yscrollcommand=self.y_scroll.set,
                                  width=100,
@@ -499,6 +499,10 @@ class workspace:
         print("{}+S     : Save your work".format(ctrl))
         print("{}+O     : Open a file".format(ctrl))
         print("{}+M     : Toggle the menu".format(ctrl))
+        print("{}+K     : Toggle Console".format(ctrl))
+        print("{}+U     : Toggle Treeview".format(ctrl))
+        print("{}+F     : Toggle Searchbar".format(ctrl))
+        print("{}+P     : Open Preferences".format(ctrl))
         print("{}+{}    : Toggle console window".format(ctrl, self.toggle_key))
         print("print(SynthDefs)      : View available SynthDefs")
         print("print(Samples)        : View character-to-sample mapping")

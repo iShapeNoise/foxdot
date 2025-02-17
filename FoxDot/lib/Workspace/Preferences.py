@@ -396,6 +396,7 @@ class Preferences:
                                      bootstyle="danger",
                                      variable=self.ttype,
                                      text="light",
+                                     value=self.theme_types[0],
                                      command=self.ttype.set(self.theme_types[0]))
         self.type_l.grid(column=0, padx=self.padx, pady=self.padx, sticky="nw")
         self.type_d = tb.Radiobutton(self.a1,
@@ -631,6 +632,7 @@ class Preferences:
                         bg=item[self.theme_name]["colors"]["active"])
                     self.theme_colors["active"] = item[self.theme_name]["colors"]["active"]
                     self.theme_type = item[self.theme_name]["type"]
+
         if self.theme_type == "light":
             self.ttype.set(self.theme_types[0])
         elif self.theme_type == "dark":
