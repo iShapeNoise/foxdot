@@ -64,6 +64,7 @@ class Preferences:
                     # ------------------
                     self.theme_colors['inputfg'] = item[COLOR_THEME]["colors"]['inputfg']
                     self.theme_colors['inputbg'] = item[COLOR_THEME]["colors"]['inputbg']
+                    self.theme_colors['type'] = item[COLOR_THEME]["type"]
         self.settings = {}
         self.conf_json = FOXDOT_CONFIG_FILE
         self.tabview = tb.Notebook(self.stop)
@@ -387,21 +388,22 @@ class Preferences:
                               pady=self.padx/2, sticky="nw")
         self.theme_types = ["light", "dark"]
         self.ttype = StringVar()
-        self.theme_type = "light"
-        self.ttype.set(self.theme_types[0])
+        if self.theme_colors['type'] == "light":
+            self.ttype.set(self.theme_types[0])
+        elif self.theme_colors['type'] == "dark":
+            self.ttype.set(self.theme_types[1])
         self.type_l = tb.Radiobutton(self.a1,
                                      bootstyle="danger",
                                      variable=self.ttype,
                                      text="light",
-                                     value=self.theme_types[0],
-                                     command=self.select_type)
+                                     command=self.ttype.set(self.theme_types[0]))
         self.type_l.grid(column=0, padx=self.padx, pady=self.padx, sticky="nw")
         self.type_d = tb.Radiobutton(self.a1,
                                      bootstyle="danger",
                                      variable=self.ttype,
                                      text="dark",
                                      value=self.theme_types[1],
-                                     command=self.select_type)
+                                     command=self.ttype.set(self.theme_types[1]))
         self.type_d.grid(column=0, padx=self.padx, pady=self.padx, sticky="nw")
         self.btn_save = tb.Button(self.a1, text="Save", command=self.save_tt)
         self.btn_save.grid(row=7, column=0, padx=self.padx,
@@ -426,7 +428,7 @@ class Preferences:
                                 sticky="nw")
         # background
         self.lbl_primary = tb.Label(
-            self.a4, text="primary\nbackground")
+            self.a4, text="primary")
         self.lbl_primary.grid(column=0, row=0, padx=self.padx, sticky="nw")
         self.btn_primary = Button(self.a4, width=5,
                                   command=lambda: self.cc(self.btn_primary,
@@ -480,7 +482,7 @@ class Preferences:
         self.btn_warning.grid(column=1, row=5, pady=10, sticky="nw")
         # dollar
         self.lbl_light = tb.Label(
-            self.a4, text="light")
+            self.a4, text="light\ncomments")
         self.lbl_light.grid(column=0, row=6, padx=self.padx, sticky="nw")
         self.btn_light = Button(
             self.a4, width=5,
@@ -496,7 +498,7 @@ class Preferences:
         self.btn_dark.config(bg=self.theme_colors["dark"])
         self.btn_dark.grid(column=1, row=7, pady=10, sticky="nw")
         # bg
-        self.lbl_bg = tb.Label(self.a5, text="bg")
+        self.lbl_bg = tb.Label(self.a5, text="bg\nbackground")
         self.lbl_bg.grid(column=0, row=0, padx=self.padx, sticky="nw")
         self.btn_bg = Button(self.a5, width=5,
                              command=lambda: self.cc(self.btn_bg, "bg"))
@@ -566,9 +568,6 @@ class Preferences:
                                                          "active"))
         self.btn_active.config(bg=self.theme_colors["active"])
         self.btn_active.grid(column=1, row=7, pady=10, sticky="nw")
-
-    def select_type(self):
-        self.theme_type = self.ttype.get()
 
     def load_tt(self):
         self.theme_name = self.themes_opt.get()
@@ -664,7 +663,7 @@ class Preferences:
                     item[self.theme_name]["colors"]["inputfg"] = self.theme_colors.get("inputfg")
                     item[self.theme_name]["colors"]["inputbg"] = self.theme_colors.get("inputbg")
                     item[self.theme_name]["colors"]["active"] = self.theme_colors.get("active")
-                    item[self.theme_name]["type"] = self.theme_type
+                    item[self.theme_name]["type"] = self.ttype.get()
             if self.theme_name not in self.themes:
                 new_id = len(json_object["themes"])
                 json_object["themes"].append({self.theme_name: {"type": "", "colors": {}}})
@@ -684,8 +683,7 @@ class Preferences:
                 json_object["themes"][new_id][self.theme_name]["colors"]["inputfg"] = self.theme_colors.get("inputfg")
                 json_object["themes"][new_id][self.theme_name]["colors"]["inputbg"] = self.theme_colors.get("inputbg")
                 json_object["themes"][new_id][self.theme_name]["colors"]["active"] = self.theme_colors.get("active")
-                self.select_type()
-                json_object["themes"][new_id][self.theme_name]["type"] = self.theme_type
+                json_object["themes"][new_id][self.theme_name]["type"] = self.ttype.get()
         openfile.close()
         with open(FOXDOT_EDITOR_THEMES, 'w') as newfile:
             json.dump(json_object, newfile, indent=6)

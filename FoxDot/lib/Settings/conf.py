@@ -91,15 +91,15 @@ try:
         for item in json_object["themes"]:
             if COLOR_THEME in item:
                 plaintext = item[COLOR_THEME]["colors"]["fg"]
-                background = item[COLOR_THEME]["colors"]["primary"]
+                background = item[COLOR_THEME]["colors"]["bg"]
                 functions = item[COLOR_THEME]["colors"]["secondary"]
                 key_types = item[COLOR_THEME]["colors"]["info"]
                 user_defn = item[COLOR_THEME]["colors"]["success"]
                 other_kws = item[COLOR_THEME]["colors"]["success"]
-                comments = item[COLOR_THEME]["colors"]["dark"]
+                comments = item[COLOR_THEME]["colors"]["light"]
                 numbers = item[COLOR_THEME]["colors"]["secondary"]
                 strings = item[COLOR_THEME]["colors"]["warning"]
-                dollar = item[COLOR_THEME]["colors"]["light"]
+                dollar = item[COLOR_THEME]["colors"]["active"]
                 arrow = item[COLOR_THEME]["colors"]["warning"]
                 players = item[COLOR_THEME]["colors"]["danger"]
                 # Prompt colours
