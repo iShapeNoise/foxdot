@@ -546,7 +546,7 @@ class Preferences:
         self.lbl_inputbg = tb.Label(self.a5, text="inputbg\nconsole_bg")
         self.lbl_inputbg.grid(column=0, row=5, padx=self.padx, sticky="nw")
         self.btn_inputbg = Button(self.a5, width=5,
-                                  command=lambda: self.cc(self.btn_console_bg,
+                                  command=lambda: self.cc(self.btn_inputbg,
                                                           "inputbg"))
         self.btn_inputbg.config(bg=self.theme_colors["inputbg"])
         self.btn_inputbg.grid(column=1, row=5, pady=10, sticky="nw")
