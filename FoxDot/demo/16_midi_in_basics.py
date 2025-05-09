@@ -65,7 +65,7 @@ midi.set_value("U0:E1", "s1.formnat", [0, 4, 0])
 midi.get_value("U0:E1")
 
 # If a value with wrong naming is added, just remove it
-midi.del_value("U0:E1", "s1.formant")
+midi.del_value("U0:E1", "s1.formnat")
 
 # And add it again
 midi.set_value("U0:E1", "s1.formant", [0, 4, 0])

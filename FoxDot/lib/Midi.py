@@ -303,10 +303,10 @@ class MidiIn:
                 # Get name and range type from midimap through channel
                 for key, cc in self.midimap.items():
                     if cc[1] == channel:
-                        if state <= 175 and ((cc[2] == "Push") or (cc[2] == "Switch") or (cc[2] == "Count")):
+                        if state <= 175 and ((cc[2] == "Push") or (cc[2] == "Switch") or (cc[2] == "Count")) or (cc[2] == "64-128")):
                             self.name = key
                             rtype = cc[2]
-                        elif state > 175 and ((cc[2] == "0-127") or (cc[2] == "-64-64")):
+                        elif state > 175 and ((cc[2] == "0-127") or (cc[2] == "-64-64"):
                             self.name = key
                             rtype = cc[2]
                         else:
@@ -385,7 +385,7 @@ class MidiIn:
                                 pass
                         except Exception:
                             print("Error Count")
-                elif rtype == "0-127" or rtype == "-64-64":
+                elif rtype == "0-127" or rtype == "-64-64" or rtype == "64-128":
                     try:
                         if rtype == "0-127":
                             vrange_min = 0
@@ -393,6 +393,9 @@ class MidiIn:
                         elif rtype == "-64-64":
                             vrange_min = -64
                             vrange_max = 64
+                        elif rtype == "64-128":
+                            vrange_min = 64
+                            vrange_max = 128
                         else:
                             print("Please only use types of 0-127 or -64-64")
                         rng = list(self.valmap[self.name][1].keys())[0]
@@ -447,7 +450,7 @@ class MidiIn:
                 # Update message to compare with new incoming message
                 self.cur_msg = self.handler.msg
             # Wait a little
-            time.sleep(0.1)
+            time.sleep(0.05)
 
     def midi_exe(self, command):
         # Execute new attribute value

@@ -208,6 +208,7 @@ class MidiMapper:
         self.val_drpdwn = tb.Combobox(self.items_frame, width=20)
         self.val_drpdwn["values"] = ("0-127",
                                      "-64-64",
+                                     "64-127",
                                      "Push",
                                      "Switch",
                                      "Count")
