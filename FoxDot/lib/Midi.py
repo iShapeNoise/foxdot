@@ -222,7 +222,7 @@ class MidiIn:
                             self.valstore[key] = 0
                         else:
                             rng = self.valmap[key][0]
-                            if rng == "0-127" or rng == "-64-64":
+                            if rng == "0-127" or rng == "-64-64" or rng == "64-127":
                                 self.valstore[key] = [[], 0]
                                 for i in range(self.layers):
                                     self.valstore[key][0].append(0)
@@ -303,7 +303,7 @@ class MidiIn:
                 # Get name and range type from midimap through channel
                 for key, cc in self.midimap.items():
                     if cc[1] == channel:
-                        if state <= 175 and ((cc[2] == "Push") or (cc[2] == "Switch") or (cc[2] == "Count") or (cc[2] == "64-128")):
+                        if state <= 175 and ((cc[2] == "Push") or (cc[2] == "Switch") or (cc[2] == "Count") or (cc[2] == "64-127")):
                             self.name = key
                             rtype = cc[2]
                         elif state > 175 and ((cc[2] == "0-127") or (cc[2] == "-64-64")):
@@ -385,7 +385,7 @@ class MidiIn:
                                 pass
                         except Exception:
                             print("Error Count")
-                elif rtype == "0-127" or rtype == "-64-64" or rtype == "64-128":
+                elif rtype == "0-127" or rtype == "-64-64" or rtype == "64-127":
                     try:
                         if rtype == "0-127":
                             vrange_min = 0
@@ -393,11 +393,11 @@ class MidiIn:
                         elif rtype == "-64-64":
                             vrange_min = -64
                             vrange_max = 64
-                        elif rtype == "64-128":
+                        elif rtype == "64-127":
                             vrange_min = 64
                             vrange_max = 128
                         else:
-                            print("Please only use types of 0-127 or -64-64")
+                            print("Please only use types of 0-127 or -64-64 or 64-127")
                         rng = list(self.valmap[self.name][1].keys())[0]
                         if rng == "Group":
                             element_list = self.valmap[self.name][1][rng]
