@@ -303,10 +303,10 @@ class MidiIn:
                 # Get name and range type from midimap through channel
                 for key, cc in self.midimap.items():
                     if cc[1] == channel:
-                        if state <= 175 and ((cc[2] == "Push") or (cc[2] == "Switch") or (cc[2] == "Count")) or (cc[2] == "64-128")):
+                        if state <= 175 and ((cc[2] == "Push") or (cc[2] == "Switch") or (cc[2] == "Count") or (cc[2] == "64-128")):
                             self.name = key
                             rtype = cc[2]
-                        elif state > 175 and ((cc[2] == "0-127") or (cc[2] == "-64-64"):
+                        elif state > 175 and ((cc[2] == "0-127") or (cc[2] == "-64-64")):
                             self.name = key
                             rtype = cc[2]
                         else:
