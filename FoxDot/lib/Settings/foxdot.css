@@ -1,0 +1,345 @@
+/* foxdot.css - Complete CSS for FoxDot Textual TUI */
+
+/* Base Screen Styling */
+Screen {
+    background: #1a1a1a;
+    color: #ffffff;
+}
+
+/* Main Container Layout */
+#main-container {
+    layout: vertical;
+    height: 100%;
+}
+
+#editor-row {
+    layout: horizontal;
+    height: 1fr;
+}
+
+/* Menu Bar Styling */
+#menu-bar {
+    height: 3;
+    background: #2d2d2d;
+    border-bottom: solid #444;
+}
+
+#menu-container {
+    align: center middle;
+}
+
+.menu-button {
+    margin: 0 1;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    min-width: 8;
+}
+
+.menu-button:hover {
+    background: #444;
+}
+
+.menu-button:focus {
+    background: #555;
+}
+
+/* Menu Modal Styling */
+#menu-modal {
+    width: 50;
+    height: auto;
+    background: #2d2d2d;
+    border: solid #444;
+    padding: 1;
+}
+
+#menu-title {
+    text-align: center;
+    background: #444;
+    color: #ffffff;
+    margin-bottom: 1;
+    padding: 1;
+}
+
+#menu-options {
+    background: #2d2d2d;
+    color: #ffffff;
+}
+
+#menu-options > .option-list--option {
+    background: #2d2d2d;
+    color: #ffffff;
+    padding: 0 1;
+}
+
+#menu-options > .option-list--option:hover {
+    background: #444;
+}
+
+#menu-options > .option-list--option-highlighted {
+    background: #555;
+}
+
+/* Tree View Styling */
+#treeview {
+    width: 25%;
+    min-width: 20;
+    max-width: 40;
+    border-right: solid #444;
+    background: #252525;
+}
+
+#directory-tree {
+    scrollbar-gutter: stable;
+}
+
+/* Line Numbers Styling */
+#linenumbers {
+    width: 5;
+    background: #2d2d2d;
+    color: #666;
+    text-align: right;
+    border-right: solid #444;
+    padding: 0 1;
+}
+
+#line-numbers-content {
+    text-align: right;
+}
+
+/* Text Editor Styling */
+#text-editor {
+    width: 1fr;
+    background: #1a1a1a;
+    color: #ffffff;
+    border: none;
+}
+
+#text-area-content {
+    background: #1a1a1a;
+    color: #ffffff;
+    scrollbar-gutter: stable;
+}
+
+/* Search Bar Styling */
+#searchbar {
+    height: 6;
+    background: #2d2d2d;
+    border-top: solid #444;
+    border-bottom: solid #444;
+    padding: 1;
+}
+
+#search-controls, #replace-controls {
+    align: center middle;
+    height: 3;
+}
+
+.search-label {
+    width: 8;
+    text-align: right;
+    margin-right: 1;
+    color: #ffffff;
+}
+
+.search-input {
+    width: 30;
+    margin: 0 1;
+    background: #1a1a1a;
+    color: #ffffff;
+    border: solid #444;
+}
+
+.search-input:focus {
+    border: solid #666;
+}
+
+.search-button {
+    margin: 0 1;
+    min-width: 10;
+    background: #444;
+    color: #ffffff;
+    border: solid #666;
+}
+
+.search-button:hover {
+    background: #555;
+}
+
+.search-hint {
+    color: #888;
+    margin-left: 2;
+    text-style: italic;
+}
+
+/* MIDI Bar Styling */
+#midibar {
+    height: 6;
+    background: #2d2d2d;
+    border-top: solid #444;
+    border-bottom: solid #444;
+    padding: 1;
+}
+
+#midi-container, #midi-names-row, #midi-values-row {
+    align: center middle;
+}
+
+.midi-slot {
+    width: 4;
+    text-align: center;
+    background: #444;
+    margin: 0 1;
+    color: #29abe2;
+    text-style: bold;
+    border: solid #666;
+}
+
+.midi-value {
+    width: 8;
+    text-align: center;
+    background: #333;
+    margin: 0 1;
+    color: #eae02a;
+    border: solid #555;
+}
+
+.midi-slot.active {
+    background: #e89c18;
+    color: #000;
+}
+
+.midi-value.active {
+    background: #49db8b;
+    color: #000;
+}
+
+/* Console Styling */
+#console {
+    height: 30%;
+    background: #000000;
+    color: #ffffff;
+    border-top: solid #444;
+}
+
+#console-content {
+    padding: 1;
+    scrollbar-gutter: stable;
+    background: #000000;
+    color: #ffffff;
+}
+
+/* Scrollbar Styling */
+ScrollView {
+    scrollbar-background: #2d2d2d;
+    scrollbar-color: #666;
+    scrollbar-color-hover: #888;
+    scrollbar-color-active: #aaa;
+}
+
+/* Header and Footer Styling */
+Header {
+    background: #2d2d2d;
+    color: #ffffff;
+    border-bottom: solid #444;
+}
+
+Footer {
+    background: #2d2d2d;
+    color: #ffffff;
+    border-top: solid #444;
+}
+
+/* Focus and Selection Styling */
+*:focus {
+    border: solid #bf4acc;
+}
+
+TextArea:focus {
+    border: solid #bf4acc;
+}
+
+/* Syntax Highlighting Colors (for future implementation) */
+.syntax-function {
+    color: #bf4acc;
+}
+
+.syntax-keyword {
+    color: #29abe2;
+}
+
+.syntax-string {
+    color: #eae02a;
+}
+
+.syntax-number {
+    color: #e89c18;
+}
+
+.syntax-comment {
+    color: #666666;
+}
+
+.syntax-player {
+    color: #ec4e20;
+}
+
+/* Responsive Design
+@media (max-width: 80px) {
+    #treeview {
+        width: 30%;
+    }
+
+    #linenumbers {
+        width: 4;
+    }
+}
+
+@media (max-width: 60px) {
+    #treeview {
+        display: none;
+    }
+
+    .search-input {
+        width: 20;
+    }
+}
+*/
+
+/* Animation and Transitions */
+Button {
+    transition: background 200ms;
+}
+
+.menu-button {
+    transition: background 150ms;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: block;
+}
+
+.highlight {
+    background: #bf4acc;
+    color: #000;
+}
+
+.error {
+    color: #ec4e20;
+    background: #2d1a1a;
+}
+
+.success {
+    color: #49db8b;
+    background: #1a2d1a;
+}
+
+.warning {
+    color: #eae02a;
+    background: #2d2d1a;
+}

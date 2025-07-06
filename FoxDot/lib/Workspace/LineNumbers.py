@@ -1,63 +1,97 @@
 from __future__ import absolute_import, division, print_function
-from . import tkimport as Tk
+from .tximport import *
 from ..Settings import LINE_NUMBER_MARKER_OFFSET
 from ..Code import execute
 
 
-class LineNumbers(Tk.Canvas):
-    def __init__(self, master, *args, **kwargs):
-        Tk.Canvas.__init__(self, *args, **kwargs)
-        self.root = master
-        self.textwidget = master.text
+class LineNumbers(Static):
+    """Line numbers widget that syncs with text editor"""
 
-    def redraw(self, *args):
-        '''redraw line numbers'''
-        # Update player line numbers
-        # execute.update_line_numbers(self.textwidget)
-        # Clear
-        self.delete("all")
-        # Draw a line
-        w = self.winfo_width() - 1
-        h = self.winfo_height()
-        self.create_line(w, 0, w, h, fill="gray")
-        i = self.textwidget.index("@0,0")
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.line_count = 1
+        self.current_line = 1
 
-        while True:
-            dline = self.textwidget.dlineinfo(i)
-            if dline is None:
-                break
-            y = dline[1]
-            h = dline[3]
-            linenum = int(str(i).split(".")[0])
-            curr_row = int(self.textwidget.index(Tk.INSERT).split(".")[0])
+    def compose(self) -> ComposeResult:
+        yield Static("1", id="line-numbers-content")
 
-            if linenum == curr_row:
-                x1, y1 = 0, y + LINE_NUMBER_MARKER_OFFSET
-                x2, y2 = w - 2, y + h
-                self.create_rectangle(x1,
-                                      y1,
-                                      x2,
-                                      y2,
-                                      fill="gray30",
-                                      outline="gray30")
+    def update_line_numbers(self, count: int, current: int = 1):
+        """Update line numbers based on text content"""
+        self.line_count = count
+        self.current_line = current
 
-            self.create_text(w - 4, y, anchor="ne",
-                             justify=Tk.RIGHT,
-                             text=linenum,
-                             font=self.root.codefont,
-                             fill="#c9c9c9")
+        lines = []
+        for i in range(1, count + 1):
+            if i == current:
+                # Highlight current line (based on current LineNumbers.py)
+                lines.append(f"[bold cyan]{i:>3}[/bold cyan]")
+            else:
+                lines.append(f"{i:>3}")
 
-            i = self.textwidget.index("{}+1line".format(i))
+        content = "\n".join(lines)
+        self.query_one("#line-numbers-content").update(content)
 
-        # Update console beat counter here too
-        self.root.console.counter.redraw()
-        self.after(30, self.redraw)
+    def sync_with_editor(self, editor_widget):
+        """Synchronize with text editor cursor position"""
+        # Get cursor position from editor
+        # Update highlighting accordingly
+        pass
 
-    def hide(self):
-        """ Removes treeview from interface """
-        self.grid_remove()
-        return
 
-    def show(self):
-        self.grid()
-        return
+# class LineNumbers(Tk.Canvas):
+#     def __init__(self, master, *args, **kwargs):
+#         Tk.Canvas.__init__(self, *args, **kwargs)
+#         self.root = master
+#         self.textwidget = master.text
+#
+#     def redraw(self, *args):
+#         '''redraw line numbers'''
+#         # Update player line numbers
+#         # execute.update_line_numbers(self.textwidget)
+#         # Clear
+#         self.delete("all")
+#         # Draw a line
+#         w = self.winfo_width() - 1
+#         h = self.winfo_height()
+#         self.create_line(w, 0, w, h, fill="gray")
+#         i = self.textwidget.index("@0,0")
+#
+#         while True:
+#             dline = self.textwidget.dlineinfo(i)
+#             if dline is None:
+#                 break
+#             y = dline[1]
+#             h = dline[3]
+#             linenum = int(str(i).split(".")[0])
+#             curr_row = int(self.textwidget.index(Tk.INSERT).split(".")[0])
+#
+#             if linenum == curr_row:
+#                 x1, y1 = 0, y + LINE_NUMBER_MARKER_OFFSET
+#                 x2, y2 = w - 2, y + h
+#                 self.create_rectangle(x1,
+#                                       y1,
+#                                       x2,
+#                                       y2,
+#                                       fill="gray30",
+#                                       outline="gray30")
+#
+#             self.create_text(w - 4, y, anchor="ne",
+#                              justify=Tk.RIGHT,
+#                              text=linenum,
+#                              font=self.root.codefont,
+#                              fill="#c9c9c9")
+#
+#             i = self.textwidget.index("{}+1line".format(i))
+#
+#         # Update console beat counter here too
+#         self.root.console.counter.redraw()
+#         self.after(30, self.redraw)
+#
+#     def hide(self):
+#         """ Removes treeview from interface """
+#         self.grid_remove()
+#         return
+#
+#     def show(self):
+#         self.grid()
+#         return

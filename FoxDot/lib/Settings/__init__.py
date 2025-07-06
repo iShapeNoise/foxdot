@@ -39,6 +39,7 @@ FOXDOT_SND = os.path.realpath(FOXDOT_ROOT + "/snd/")
 FOXDOT_LOOP = "_loop_/"
 FOXDOT_EDITOR_ROOT = os.path.realpath(FOXDOT_ROOT + "/lib/Workspace/")
 FOXDOT_EDITOR_THEMES = os.path.realpath(FOXDOT_EDITOR_ROOT + "/themes/themes.json")
+FOXDOT_SETTINGS = os.path.realpath(FOXDOT_ROOT + "/lib/Settings/")
 FOXDOT_MIDI_MAPS = os.path.realpath(FOXDOT_ROOT + "/lib/MidiMaps")
 
 SCLANG_EXEC = 'sclang.exe' if SYSTEM == WINDOWS else 'sclang'

@@ -30,10 +30,6 @@ parser.add_argument('-s',
                     '--startup',
                     action='store',
                     help="use an alternate startup file")
-parser.add_argument('-S',
-                    '--simple',
-                    action='store_true',
-                    help="run FoxDot in simple (accessible) mode")
 parser.add_argument('-n',
                     '--no-startup',
                     action='store_true',
@@ -68,9 +64,8 @@ if args.pipe:
     # Just take commands from the CLI
     handle_stdin()
 else:
-    # Open the GUI
-    if args.simple:
-        from .lib.Workspace.Simple import workspace
-    else:
-        from .lib.Workspace.Editor import workspace
-    FoxDot = workspace(FoxDotCode).run()
+    # Open the TUI
+    from .lib.Workspace.Editor import Editor
+    # FoxDot = Editor(FoxDotCode)
+    FoxDot = Editor()
+    FoxDot.run()
