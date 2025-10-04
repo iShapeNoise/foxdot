@@ -60,5 +60,6 @@ setup(name='FoxDot',
       install_requires=[
           'python-rtmidi',
           'soundplay',
+          'python-osc',
           'textual']
       )
