@@ -463,3 +463,6 @@ FoxDot's audio files have been obtained from a number of sources but I've lost r
 - Other samples have come from the [Dirt Sample Engine](https://github.com/tidalcycles/Dirt-Samples/tree/c2db9a0dc4ffb911febc613cdb9726cae5175223) which is part of the TidalCycles live coding language created by Yaxu - another huge amount of thanks.
 
 If you feel I've used a sample where I shouldn't have, please get in touch!
+
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/iShapeNoise/foxdot)
