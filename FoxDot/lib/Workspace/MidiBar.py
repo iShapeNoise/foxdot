@@ -1,54 +1,53 @@
+from __future__ import absolute_import, division, print_function
 from .tximport import *
-from ..Utils import midi_cmd
-from ..Settings import *
-from .Format import *
 
 
-class MidiBar(ScrollView):
-    """MIDI parameter display bar with scrolling"""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.midi_slots = 16
-        self.data_list = [""] * self.midi_slots
-        self.is_running = True
-        self.setup_midi_monitoring()
+class MidiBar(Static):
+    """MIDI bar - visual only"""
 
     def compose(self) -> ComposeResult:
-        with Vertical():
-            # Parameter names row
-            with Horizontal(id="midi-names-row"):
-                for i in range(self.midi_slots):
-                    yield Static(f"CH{i+1:02d}", classes="midi-slot", id=f"midi-name-{i}")
+        yield Horizontal(
+            Label("MIDI:"),
+            Button("Device 1"),
+            Button("Device 2"),
+            id="midi-controls"
+        )
 
-            # Parameter values row
-            with Horizontal(id="midi-values-row"):
-                for i in range(self.midi_slots):
-                    yield Static("---", classes="midi-value", id=f"midi-value-{i}")
-
-    def setup_midi_monitoring(self):
-        """Start MIDI monitoring thread"""
-        self.midi_thread = threading.Thread(target=self.midi_update_loop, daemon=True)
-        self.midi_thread.start()
-
-    def midi_update_loop(self):
-        """Continuously update MIDI parameters"""
-        while self.is_running:
-            # Based on current MidiBar.py implementation
-            # Get MIDI messages and update display
-            time.sleep(0.05)
-
-    def update_midi_slot(self, slot: int, name: str, value: str, active: bool = False):
-        """Update a specific MIDI slot"""
-        name_widget = self.query_one(f"#midi-name-{slot}")
-        value_widget = self.query_one(f"#midi-value-{slot}")
-
-        name_widget.update(name)
-        value_widget.update(value)
-
-        # Color coding for active parameters
-        if active:
-            name_widget.add_class
+    # def compose(self) -> ComposeResult:
+    #     with Vertical():
+    #         # Parameter names row
+    #         with Horizontal(id="midi-names-row"):
+    #             for i in range(self.midi_slots):
+    #                 yield Static(f"CH{i+1:02d}", classes="midi-slot", id=f"midi-name-{i}")
+    #
+    #         # Parameter values row
+    #         with Horizontal(id="midi-values-row"):
+    #             for i in range(self.midi_slots):
+    #                 yield Static("---", classes="midi-value", id=f"midi-value-{i}")
+    #
+    # def setup_midi_monitoring(self):
+    #     """Start MIDI monitoring thread"""
+    #     self.midi_thread = threading.Thread(target=self.midi_update_loop, daemon=True)
+    #     self.midi_thread.start()
+    #
+    # def midi_update_loop(self):
+    #     """Continuously update MIDI parameters"""
+    #     while self.is_running:
+    #         # Based on current MidiBar.py implementation
+    #         # Get MIDI messages and update display
+    #         time.sleep(0.05)
+    #
+    # def update_midi_slot(self, slot: int, name: str, value: str, active: bool = False):
+    #     """Update a specific MIDI slot"""
+    #     name_widget = self.query_one(f"#midi-name-{slot}")
+    #     value_widget = self.query_one(f"#midi-value-{slot}")
+    #
+    #     name_widget.update(name)
+    #     value_widget.update(value)
+    #
+    #     # Color coding for active parameters
+    #     if active:
+    #         name_widget.add_class
 
 
 # class MidiBar:

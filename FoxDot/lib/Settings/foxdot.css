@@ -44,13 +44,21 @@ Screen {
     background: #555;
 }
 
-/* Menu Modal Styling */
+/* Menu Modal Styling - Dropdown appearance */
 #menu-modal {
-    width: 50;
+    width: 30;
     height: auto;
+    max-height: 20;
     background: #2d2d2d;
     border: solid #444;
-    padding: 1;
+    padding: 0;
+    layer: overlay;  /* Ensure it appears on top */
+}
+
+#menu-options {
+    background: #2d2d2d;
+    color: #ffffff;
+    height: auto;
 }
 
 #menu-title {
@@ -95,16 +103,16 @@ Screen {
 
 /* Line Numbers Styling */
 #linenumbers {
-    width: 5;
+    width: 8;
     background: #2d2d2d;
     color: #666;
     text-align: right;
     border-right: solid #444;
-    padding: 0 1;
 }
 
 #line-numbers-content {
     text-align: right;
+    padding-top: 1;  /* Additional padding to match text area border */
 }
 
 /* Text Editor Styling */

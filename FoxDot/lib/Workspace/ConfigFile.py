@@ -1,64 +1,89 @@
 from __future__ import absolute_import, division, print_function
 
-from .tkimport import *
+from .tximport import *
 from ..Settings import FOXDOT_ICON, FOXDOT_ICON_GIF
-
-try:
-    import tkMessageBox
-except ImportError:
-    from tkinter import messagebox as tkMessageBox
-
 import os.path
 
 
-class Config:
+class Config(ModalScreen):
+    """Config file editor as a modal screen"""
+
+    CSS = """
+    Config {
+        align: center middle;
+    }
+
+    #config-container {
+        width: 80;
+        height: 40;
+        border: solid $primary;
+        background: $surface;
+    }
+
+    #config-title {
+        dock: top;
+        height: 3;
+        content-align: center middle;
+        background: $primary;
+    }
+
+    #button-row {
+        dock: bottom;
+        height: 3;
+        padding: 1;
+    }
+
+    #config-editor {
+        height: 1fr;
+    }
+    """
+
     def __init__(self, path):
-        self.root = Toplevel()
-        self.root.title("conf.txt")
-        self.root.protocol("WM_DELETE_WINDOW", self.save_and_close)
-        try:
-            # Use .ico file by default
-            self.root.iconbitmap(FOXDOT_ICON)
-        except TclError:
-            # Use .gif if necessary
-            self.root.tk.call('wm', 'iconphoto', self.root._w, PhotoImage(file=FOXDOT_ICON_GIF))
+        super().__init__()
         self.filepath = os.path.realpath(path)
-        self.y_scroll = Scrollbar(self.root)
-        self.y_scroll.grid(row=0, column=2, sticky='nsew')
-        self.textbox = Text(self.root, width=50, yscrollcommand=self.y_scroll.set)
-        self.textbox.grid(row=0, column=0, columnspan=2)
-        self.y_scroll.config(command=self.textbox.yview)
-        self.exit = Button(self.root, text="Cancel", command=self.save_and_close)
-        self.exit.grid(row=1, column=0, stick=N+S+E+W)
-        self.save = Button(self.root, text="Save Changes", command=self.save_changes)
-        self.save.grid(row=1, column=1, sticky=N+S+E+W, columnspan=2)
         self.unsaved = True
+
         with open(self.filepath) as f:
             self.text = f.read().rstrip()
-        self.textbox.insert(INSERT, self.text)
-        # Add binds?
-        # self.textbox.bind()
 
-    def start(self):
-        self.root.mainloop()
+    def compose(self) -> ComposeResult:
+        with Container(id="config-container"):
+            yield Static("conf.txt", id="config-title")
+            yield TextArea(
+                text=self.text,
+                language="json",
+                id="config-editor"
+            )
+            with Horizontal(id="button-row"):
+                yield Button("Cancel", id="cancel-btn")
+                yield Button("Save Changes", id="save-btn", variant="primary")
 
-    def save_and_close(self, event=None):
-        """ Asks the user if they want to save changes """
-        if self.get_text() != self.text:
-            answer = tkMessageBox.askyesno("Save changes", "Do you want to save your changes?")
-            if answer:
-                return self.save_changes()
-        return self.root.destroy()
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "save-btn":
+            self.save_changes()
+        elif event.button.id == "cancel-btn":
+            self.save_and_close()
+
+    def save_and_close(self):
+        """Ask user if they want to save changes"""
+        current_text = self.query_one("#config-editor").text
+
+        if current_text != self.text:
+            # In Textual, we'd use a custom confirmation dialog
+            # For now, just close
+            self.app.pop_screen()
+        else:
+            self.app.pop_screen()
 
     def get_text(self):
-        return self.textbox.get("0.0", END).rstrip()
+        return self.query_one("#config-editor").text
 
     def save_changes(self):
+        """Save changes to config file"""
         text = self.get_text()
-        f = open(self.filepath, "w")  # writing a file
-        f.write(text)
-        f.close()
-        self.root.destroy()
-        tkMessageBox.showwarning(title="Just a heads up",
-                                 message="A restart of FoxDot is required for the changes to take effect")
-        return
+
+        with open(self.filepath, "w") as f:
+            f.write(text)
+
+        self.app.notify("A restart of FoxDot is required for the changes to take effect", severity="warning")
+        self.app.pop_screen()

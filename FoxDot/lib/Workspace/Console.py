@@ -1,9 +1,7 @@
-# !/usr/bin/python
 from __future__ import absolute_import, division, print_function
 from .tximport import *
 from .Format import *
 from .AppFunctions import stdout
-# from .MenuBar import ConsolePopupMenu
 from ..Settings import *
 import math
 import random
@@ -12,61 +10,52 @@ try:
 except ImportError:
     import queue as Queue
 
-""" Console widget that displays the true Python input """
 
-
-class Console(ScrollView):
-    """Console output area with scrolling based on current console implementation"""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.output_lines = []
-        # self.queue = Queue()
-        # self.setup_output_redirection()
+class Console(Static):
+    """Console - visual only"""
 
     def compose(self) -> ComposeResult:
-        with Vertical():  # Ensure Vertical is imported as a class
-            yield Static(  # Ensure Static is imported as a class
-                "System booted 'PitchGlitch' Branch of FoxDot! Press Ctrl+H for help.\n" +"-" * 70,
-                id="console-content"
-            )
+        yield Static(
+            "FoxDot Console\n" + "=" * 50 + "\nReady...",
+            id="console-content"
+        )
 
-    def setup_output_redirection(self):
-        """Redirect stdout to console with queue-based threading"""
-        # Based on current console.py queue system
-        self.update_thread = threading.Thread(target=self.update_loop, daemon=True)
-        self.update_thread.start()
-
-    def update_loop(self):
-        """Continuously process queue updates"""
-        while True:
-            try:
-                message = self.queue.get(timeout=0.05)
-                self.write_output(message)
-            except Exception:
-                continue
-
-    def write_output(self, text: str):
-        """Add text to console output with scrolling"""
-        self.output_lines.append(text)
-        # Keep last 1000 lines for performance
-        if len(self.output_lines) > 1000:
-            self.output_lines = self.output_lines[-1000:]
-
-        content = "\n".join(self.output_lines)
-        self.query_one("#console-content").update(content)
-
-        # Auto-scroll to bottom
-        self.scroll_end(animate=False)
-
-    def clear(self):
-        """Clear console output"""
-        self.output_lines.clear()
-        self.query_one("#console-content").update("")
-
-    def read(self):
-        """Return console contents"""
-        return "\n".join(self.output_lines)
+    # def setup_output_redirection(self):
+    #     """Redirect stdout to console with queue-based threading"""
+    #     # Based on current console.py queue system
+    #     self.update_thread = threading.Thread(target=self.update_loop, daemon=True)
+    #     self.update_thread.start()
+    #
+    # def update_loop(self):
+    #     """Continuously process queue updates"""
+    #     while True:
+    #         try:
+    #             message = self.queue.get(timeout=0.05)
+    #             self.write_output(message)
+    #         except Exception:
+    #             continue
+    #
+    # def write_output(self, text: str):
+    #     """Add text to console output with scrolling"""
+    #     self.output_lines.append(text)
+    #     # Keep last 1000 lines for performance
+    #     if len(self.output_lines) > 1000:
+    #         self.output_lines = self.output_lines[-1000:]
+    #
+    #     content = "\n".join(self.output_lines)
+    #     self.query_one("#console-content").update(content)
+    #
+    #     # Auto-scroll to bottom
+    #     self.scroll_end(animate=False)
+    #
+    # def clear(self):
+    #     """Clear console output"""
+    #     self.output_lines.clear()
+    #     self.query_one("#console-content").update("")
+    #
+    # def read(self):
+    #     """Return console contents"""
+    #     return "\n".join(self.output_lines)
 
 
 # class console:

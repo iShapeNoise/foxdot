@@ -1,104 +1,90 @@
+from __future__ import absolute_import, division, print_function
 from .tximport import *
-#from .tkimport import Text, SEL, END, SEL_FIRST, SEL_LAST, INSERT
 from .Format import *
 
-
+ 
 class SearchBar(Static):
-    """Search and replace functionality with scrolling support"""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.search_list = []
-        self.search_term = ""
-        self.current_index = 0
+    """Search bar - visual only"""
 
     def compose(self) -> ComposeResult:
         with Vertical():
             with Horizontal(id="search-controls"):
-                yield Label("Search:", classes="search-label")
-                yield Input(
-                    placeholder="Enter search term",
-                    id="search-input",
-                    classes="search-input"
-                )
-                yield Button("Find", id="find-button", classes="search-button")
-                yield Button("Replace", id="replace-button", classes="search-button")
-                yield Button("Replace All", id="replace-all-button", classes="search-button")
+                yield Label("Search:")
+                yield Input(placeholder="Enter search term", id="search-input")
+                yield Button("Find", id="find-button")
+                yield Button("Replace", id="replace-button")
 
             with Horizontal(id="replace-controls"):
-                yield Label("Replace:", classes="search-label")
-                yield Input(
-                    placeholder="Replace with",
-                    id="replace-input",
-                    classes="search-input"
-                )
+                yield Label("Replace:")
+                yield Input(placeholder="Replace with", id="replace-input")
                 yield Label("ENTER to search << >> 2 x TAB to get back!", classes="search-hint")
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Handle search button clicks"""
-        if event.button.id == "find-button":
-            self.perform_search()
-        elif event.button.id == "replace-button":
-            self.perform_replace()
-        elif event.button.id == "replace-all-button":
-            self.perform_replace_all()
 
-    def on_input_submitted(self, event: Input.Submitted) -> None:
-        """Handle Enter key in search input"""
-        if event.input.id == "search-input":
-            self.perform_search()
-
-    def perform_search(self):
-        """Perform search operation - placeholder"""
-        search_term = self.query_one("#search-input").value
-        if search_term:
-            self.search_term = search_term
-            # Get reference to main text editor
-            try:
-                text_editor = self.app.query_one("#text-editor")
-                # Implement search logic here
-                # This would integrate with the text editor's search functionality
-                self.highlight_search_results(text_editor, search_term)
-            except Exception:
-                pass  # Text editor not found
-
-    def perform_replace(self):
-        """Perform single replace operation - placeholder"""
-        search_term = self.query_one("#search-input").value
-        replace_term = self.query_one("#replace-input").value
-
-        if search_term and replace_term:
-            # Implement replace logic here
-            pass
-
-    def perform_replace_all(self):
-        """Perform replace all operation - placeholder"""
-        search_term = self.query_one("#search-input").value
-        replace_term = self.query_one("#replace-input").value
-
-        if search_term and replace_term:
-            # Implement replace all logic here
-            pass
-
-    def highlight_search_results(self, text_editor, search_term):
-        """Highlight search results in the text editor"""
-        # Based on the current SearchBar implementation logic
-        # This would need to integrate with Textual's TextArea highlighting
-        pass
-
-    def reset_search(self):
-        """Reset search state"""
-        self.search_list.clear()
-        self.search_term = ""
-        self.current_index = 0
-
-        # Clear input fields
-        self.query_one("#search-input").value = ""
-        self.query_one("#replace-input").value = ""
-
-    def focus_search_input(self):
-        """Focus the search input field"""
-        self.query_one("#search-input").focus()
+    # def on_button_pressed(self, event: Button.Pressed) -> None:
+    #     """Handle search button clicks"""
+    #     if event.button.id == "find-button":
+    #         self.perform_search()
+    #     elif event.button.id == "replace-button":
+    #         self.perform_replace()
+    #     elif event.button.id == "replace-all-button":
+    #         self.perform_replace_all()
+    #
+    # def on_input_submitted(self, event: Input.Submitted) -> None:
+    #     """Handle Enter key in search input"""
+    #     if event.input.id == "search-input":
+    #         self.perform_search()
+    #
+    # def perform_search(self):
+    #     """Perform search operation - placeholder"""
+    #     search_term = self.query_one("#search-input").value
+    #     if search_term:
+    #         self.search_term = search_term
+    #         # Get reference to main text editor
+    #         try:
+    #             text_editor = self.app.query_one("#text-editor")
+    #             # Implement search logic here
+    #             # This would integrate with the text editor's search functionality
+    #             self.highlight_search_results(text_editor, search_term)
+    #         except Exception:
+    #             pass  # Text editor not found
+    #
+    # def perform_replace(self):
+    #     """Perform single replace operation - placeholder"""
+    #     search_term = self.query_one("#search-input").value
+    #     replace_term = self.query_one("#replace-input").value
+    #
+    #     if search_term and replace_term:
+    #         # Implement replace logic here
+    #         pass
+    #
+    # def perform_replace_all(self):
+    #     """Perform replace all operation - placeholder"""
+    #     search_term = self.query_one("#search-input").value
+    #     replace_term = self.query_one("#replace-input").value
+    #
+    #     if search_term and replace_term:
+    #         # Implement replace all logic here
+    #         pass
+    #
+    # def highlight_search_results(self, text_editor, search_term):
+    #     """Highlight search results in the text editor"""
+    #     # Based on the current SearchBar implementation logic
+    #     # This would need to integrate with Textual's TextArea highlighting
+    #     pass
+    #
+    # def reset_search(self):
+    #     """Reset search state"""
+    #     self.search_list.clear()
+    #     self.search_term = ""
+    #     self.current_index = 0
+    #
+    #     # Clear input fields
+    #     self.query_one("#search-input").value = ""
+    #     self.query_one("#replace-input").value = ""
+    #
+    # def focus_search_input(self):
+    #     """Focus the search input field"""
+    #     self.query_one("#search-input").focus()
 
 
 # class SearchBar:

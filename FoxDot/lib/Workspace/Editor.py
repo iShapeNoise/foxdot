@@ -5,48 +5,31 @@ from __future__ import absolute_import, division, print_function
 
 """ Textual interface for Live Coding on headless operating system"""
 
-
 # This removed blurry fonts on Windows
 try:
     from ctypes import windll
     windll.shcore.SetProcessDpiAwareness(1)
 except Exception:
     pass
-# Tkinter Interface
+
+# Textual Interface
 from .tximport import *
+
 # Custom app modules
 from ..Code import write_to_file
 from ..Utils import get_pypi_version
 from .Format import *
 from .AppFunctions import *
-from .TextBox import ThreadedText
+from ..Settings import *
 from .MenuBar import MenuBar, Menu
 from .Console import Console
-from .Treeview import TreeView
+from .TextBox import ThreadedText
 from .LineNumbers import LineNumbers
-from .MidiBar import MidiBar
-from .SearchBar import SearchBar
-# from .Prompt import TextPrompt
-# from .BracketHandler import BracketHandler
-# from .SampleChart import SampleChart
-# from .MidiMapper import MidiMapper
-from ..Custom.OSCVG import OSCVG
-from functools import partial
-from distutils.version import LooseVersion as VersionNumber
-import webbrowser
-import os
-import re
-import socket
-# Code execution
-from ..Settings import *
-from ..Code import execute
-from ..ServerManager import TempoServer
 
 
 class Editor(App):
-    """Main FoxDot TUI Application"""
+    """Main FoxDot TUI Application - Visual Structure Only"""
     CSS_PATH = FOXDOT_SETTINGS + "/" + "foxdot.css"
-    TITLE = "FoxDot >> PitchGlitch"
 
     # Reactive properties for component visibility
     show_menu = reactive(True)
@@ -56,107 +39,72 @@ class Editor(App):
     show_midibar = reactive(False)
     show_searchbar = reactive(False)
 
-    BINDINGS = [
-        # File operations
-        Binding("ctrl+n", "new_file", "New File"),
-        Binding("ctrl+o", "open_file", "Open File"),
-        Binding("ctrl+s", "save_file", "Save File"),
-
-        # View toggles
-        Binding("ctrl+m", "toggle_menu", "Toggle Menu"),
-        Binding("ctrl+k", "toggle_console", "Toggle Console"),
-        Binding("ctrl+0", "toggle_linenumbers", "Toggle Line Numbers"),
-        Binding("ctrl+u", "toggle_treeview", "Toggle Tree View"),
-        Binding("ctrl+f", "toggle_searchbar", "Toggle Search Bar"),
-        Binding("f1", "toggle_midibar", "Toggle MIDI Bar"),
-
-        # Code execution
-        Binding("ctrl+enter", "exec_block", "Execute Block"),
-        Binding("alt+enter", "exec_line", "Execute Line"),
-        Binding("ctrl+period", "kill_all", "Kill All"),
-
-        # Edit operations
-        Binding("ctrl+a", "select_all", "Select All"),
-        Binding("ctrl+d", "duplicate_line", "Duplicate Line"),
-        Binding("ctrl+z", "undo", "Undo"),
-        Binding("ctrl+y", "redo", "Redo"),
-
-        # Special characters
-        Binding("ctrl+l", "insert_lambda", "Insert Lambda"),
-        Binding("ctrl+t", "insert_tilde", "Insert Tilde"),
-
-        # Help
-        Binding("ctrl+h", "show_help", "Show Help"),
-        Binding("ctrl+p", "show_preferences", "Preferences"),
-
-        # Quit
-        Binding("ctrl+q", "quit", "Quit"),
-    ]
-
     def compose(self) -> ComposeResult:
         """Create the main layout structure"""
 
-        # Header with menu (toggleable)
         if self.show_menu:
-            yield Header()
             yield MenuBar(id="menu-bar")
 
-        # Main content area
         with Container(id="main-container"):
             with Horizontal(id="editor-row"):
-                # Left sidebar: Tree view (toggleable)
                 if self.show_treeview:
-                    yield TreeView(id="treeview")
+                    yield Static("TREE\nVIEW", id="treeview")
 
-                # Line numbers (toggleable)
                 if self.show_linenumbers:
                     yield LineNumbers(id="linenumbers")
 
-                # Main text editor
                 yield ThreadedText(
                     text="# Welcome to FoxDot TUI!\n# Start live coding here...\n",
                     id="text-editor"
                 )
 
-            # Search bar (toggleable)
             if self.show_searchbar:
-                yield SearchBar(id="searchbar")
+                yield Static("SEARCH BAR PLACEHOLDER", id="searchbar")
 
-            # MIDI bar (toggleable)
             if self.show_midibar:
-                yield MidiBar(id="midibar")
+                yield Static("MIDI BAR PLACEHOLDER", id="midibar")
 
-            # Console (toggleable)
             if self.show_console:
                 yield Console(id="console")
 
-        # Footer with status
         yield Footer()
 
-    # Watch methods and action handlers...
-    # (Include all the toggle and action methods from previous implementation)
+    def on_text_area_changed(self, event) -> None:
+        """ Handle text area changes"""
+        if self.show_linenumbers:
+            try:
+                linenumbers = self.query_one("#linenumbers", LineNumbers)
+                text_area = self.query_one("#text-area-content", TextArea)
 
-        # Developer generated
-        # CodeClass.namespace['GUI'] = self
-        # CodeClass.namespace['Player'].widget = self
-        # self.version = this_version = CodeClass.namespace['__version__']
-        # pypi_version = get_pypi_version()
-        #
-        # def check_versions():
-        #     # if pypi_version is not None and VersionNumber(pypi_version) > VersionNumber(this_version):
-        #     #     tkMessageBox.showinfo("New version available", "There is a new version of FoxDot available from PyPI. Upgrade by going to your command prompt and running:\n\npip install FoxDot --upgrade")
-        #     return
-        # # Used for docstring prompt
-        # self.namespace = CodeClass.namespace
+                # Count lines
+                line_count = len(text_area.text.split('\n'))
 
-    # AI generated
-    #     show_console = reactive(True)
-    #     show_treeview = reactive(True)
-    #     show_linenumbers = reactive(True)
-    #
-    # def watch_show_console(self, show: bool) -> None:
-    #     self.query_one("#console").display = show
+                # Get current cursor line
+                cursor_row = text_area.cursor_location[0] + 1
 
+                # Update line numbers
+                linenumbers.update_line_numbers(line_count, cursor_row)
+            except Exception:
+                pass
+
+    # Watch methods for reactive properties
+    def watch_show_menu(self, show: bool) -> None:
+        self.refresh(recompose=True)
+
+    def watch_show_console(self, show: bool) -> None:
+        self.refresh(recompose=True)
+
+    def watch_show_linenumbers(self, show: bool) -> None:
+        self.refresh(recompose=True)
+
+    def watch_show_treeview(self, show: bool) -> None:
+        self.refresh(recompose=True)
+
+    def watch_show_midibar(self, show: bool) -> None:
+        self.refresh(recompose=True)
+
+    def watch_show_searchbar(self, show: bool) -> None:
+        self.refresh(recompose=True)
 
     # FoxDot developer
     #     # Import configuration constants from existing system
