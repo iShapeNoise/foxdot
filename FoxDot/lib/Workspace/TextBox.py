@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
-# from .tkimport import Text, SEL, END, SEL_FIRST, SEL_LAST, INSERT
 from .Format import *
 from .tximport import *
+from textual.message import Message
 
 try:
     import Queue
@@ -9,161 +9,176 @@ except ImportError:
     import queue as Queue
 
 
+class FoxDotTextEditor(TextEditor):
+    """Custom TextEditor with FoxDot-specific key bindings using message pattern"""
+
+    BINDINGS = [
+        ("ctrl+enter", "exec_block", "Execute Block"),
+        ("alt+enter", "exec_line", "Execute Line"),
+        ("ctrl+period", "kill_all", "Kill All"),
+        ("ctrl+m", "toggle_menu", "Toggle Menu"),
+        ("ctrl+k", "toggle_console", "Toggle Console"),
+        ("ctrl+0", "toggle_linenumbers", "Toggle Line Numbers"),
+        ("ctrl+u", "toggle_treeview", "Toggle Tree View"),
+        ("ctrl+f", "toggle_searchbar", "Toggle Search Bar"),
+        ("f1", "toggle_midibar", "Toggle MIDI Bar"),
+        ("ctrl+s", "save_file", "Save File"),
+        ("ctrl+o", "open_file", "Open File"),
+        ("ctrl+n", "new_file", "New File"),
+        ("ctrl+a", "select_all", "Select All"),
+    ]
+
+    def on_key(self, event) -> None:
+        """Debug: Log all key events"""
+        # Log the event details
+        key_info = f"Key: {event.key}"
+        if hasattr(event, 'character') and event.character:
+            key_info += f", Char: {repr(event.character)}"
+        if hasattr(event, 'modifiers'):
+            key_info += f", Mods: {event.modifiers}"
+
+        self.app.notify(key_info)
+
+    # Message classes for each action
+    class ExecBlock(Message, bubble=True):
+        """Message posted when executing a code block"""
+        pass
+
+    class ExecLine(Message, bubble=True):
+        """Message posted when executing a line"""
+        pass
+
+    class KillAll(Message, bubble=True):
+        """Message posted when killing all sounds"""
+        pass
+
+    class ToggleMenu(Message, bubble=True):
+        """Message posted when toggling menu"""
+        pass
+
+    class ToggleConsole(Message, bubble=True):
+        """Message posted when toggling console"""
+        pass
+
+    class ToggleLineNumbers(Message, bubble=True):
+        """Message posted when toggling line numbers"""
+        pass
+
+    class ToggleTreeView(Message, bubble=True):
+        """Message posted when toggling tree view"""
+        pass
+
+    class ToggleSearchBar(Message, bubble=True):
+        """Message posted when toggling search bar"""
+        pass
+
+    class ToggleMidiBar(Message, bubble=True):
+        """Message posted when toggling MIDI bar"""
+        pass
+
+    class SaveFile(Message, bubble=True):
+        """Message posted when saving file"""
+        pass
+
+    class OpenFile(Message, bubble=True):
+        """Message posted when opening file"""
+        pass
+
+    class NewFile(Message, bubble=True):
+        """Message posted when creating new file"""
+        pass
+
+    class SelectAll(Message, bubble=True):
+        """Message posted when selecting all text"""
+        pass
+
+    # Action methods that post messages
+    async def action_exec_block(self) -> None:
+        self.post_message(self.ExecBlock())
+
+    async def action_exec_line(self) -> None:
+        self.post_message(self.ExecLine())
+
+    async def action_kill_all(self) -> None:
+        self.post_message(self.KillAll())
+
+    async def action_toggle_menu(self) -> None:
+        self.post_message(self.ToggleMenu())
+
+    async def action_toggle_console(self) -> None:
+        self.post_message(self.ToggleConsole())
+
+    async def action_toggle_linenumbers(self) -> None:
+        self.post_message(self.ToggleLineNumbers())
+
+    async def action_toggle_treeview(self) -> None:
+        self.post_message(self.ToggleTreeView())
+
+    async def action_toggle_searchbar(self) -> None:
+        self.post_message(self.ToggleSearchBar())
+
+    async def action_toggle_midibar(self) -> None:
+        self.post_message(self.ToggleMidiBar())
+
+    async def action_save_file(self) -> None:
+        self.post_message(self.SaveFile())
+
+    async def action_open_file(self) -> None:
+        self.post_message(self.OpenFile())
+
+    async def action_new_file(self) -> None:
+        self.post_message(self.NewFile())
+
+    async def action_select_all(self) -> None:
+        self.post_message(self.SelectAll())
+
+
 class ThreadedText(ScrollView):
-    """Main code editor with syntax highlighting and vertical scrollbar"""
+    """Wrapper for FoxDotTextEditor"""
 
     def __init__(self, text: str = "", **kwargs):
-        # Remove 'text' from kwargs before passing to parent
         kwargs.pop('text', None)
         super().__init__(**kwargs)
-        self.text_content = text  # Store the text content separately
+        self.text_content = text
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield TextArea(
+            yield FoxDotTextEditor(
                 text=self.text_content,
-                language="python",
-                theme="monokai",
-                show_line_numbers=False,  # We handle line numbers separately
                 id="text-area-content"
             )
 
-    def setup_syntax_highlighting(self):
-        """Set up FoxDot-specific syntax highlighting"""
-        # Based on current FoxDot Format.py implementation
-        pass
-
-    def setup_key_bindings(self):
-        """Set up FoxDot-specific key bindings"""
-        # Preserve existing shortcuts from workspace class
-        pass
-
     @property
     def text(self):
-        """Get text content"""
         return self.query_one("#text-area-content").text
 
     @text.setter
     def text(self, value: str):
-        """Set text content"""
         self.query_one("#text-area-content").text = value
 
     def insert(self, text: str):
-        """Insert text at cursor position"""
         self.query_one("#text-area-content").insert(text)
 
     def select_all(self):
-        """Select all text"""
         self.query_one("#text-area-content").select_all()
 
+    def cut(self):
+        text_area = self.query_one("#text-area-content")
+        if text_area.selection:
+            import pyperclip
+            pyperclip.copy(text_area.selected_text)
+            text_area.delete(text_area.selection.start, text_area.selection.end)
 
-# class ThreadedText(Text):
-#     def __init__(self, master, **options):
-#         Text.__init__(self, master, **options)
-#         self.root = master
-#         background = colour_map['background']
-#         self.config(
-#             highlightbackground=colour_map['plaintext'],
-#             selectbackground=background,
-#             selectforeground=colour_map['plaintext'],
-#             highlightthickness=0
-#         )
-#         self.height = options.get("height", 20)
-#         self.queue = Queue.Queue()
-#         self.lines = 0  # number of lines in the text
-#         self.modifying = False
-#         self.update()
-#
-#     def on_resize(self, event):
-#         line_h = self.dlineinfo("@0,0")
-#         if line_h is not None:
-#             self.height = int((self.winfo_height()-2) / line_h[3])
-#         return
-#
-#     def get_num_lines(self):
-#         self.lines = len(self.get("1.0", END).split("\n"))
-#         return self.lines
-#
-#     def update(self):
-#         """
-#         Recursively called method that monitors as queue of Tkinter tasks.
-#         """
-#         try:
-#             while True:
-#                 task, args, kwargs = self.queue.get_nowait()
-#                 task(*args, **kwargs)
-#                 self.update_idletasks()
-#         # Break when the queue is empty
-#         except Queue.Empty:
-#             pass
-#         except Exception as e:
-#             print(e)
-#         # Recursive call
-#         self.after(10, self.update)
-#         return
-#
-#     def has_selection(self):
-#         """ Returns True if the selection tag is present in the text box """
-#         return bool(self.tag_ranges(SEL))
-#
-#     def remove_selection(self):
-#         """ Removes selection from the entire document """
-#         self.tag_remove(SEL, "1.0", END)
-#         return
-#
-#     def is_selected(self, index):
-#         """ Returns True if the character at index has the SEL tag """
-#         return self.index(index) in self.char_range(SEL_FIRST, SEL_LAST) if self.has_selection() else False
-#
-#     def row_col(self, index):
-#         return tuple([int(x) for x in self.index(index).split(".")])
-#
-#     def is_after(self, index1, index2):
-#         """
-#         Returns True if index1 is after index2, returns True if they are equal
-#         """
-#         a_row, a_col = self.row_col(index1)
-#         b_row, b_col = self.row_col(index2)
-#         return (a_row > b_row) or (a_row == b_row and a_col >= b_col)
-#
-#     def is_before(self, index1, index2):
-#         """
-#         Returns True if index1 is after index2, returns True if they are equal
-#         """
-#         return not self.is_after(index1, index2)
-#
-#     def char_range(self, index1, index2):
-#         """ Returns a list of indices between two Tk indices"""
-#         if self.is_after(index1, index2):
-#             index1, index2 = index2, index1
-#             reverse = True
-#         else:
-#             reverse = False
-#         a_row, a_col = self.row_col(index1)
-#         b_row, b_col = self.row_col(index2)
-#         data = []
-#         for row in range(a_row, b_row + 1,):
-#             if row == a_row:
-#                 x1_col = a_col
-#             else:
-#                 x1_col = 0
-#             if row == b_row:
-#                 x2_col = b_col
-#             else:
-#                 _, x2_col = self.row_col(self.index("{}.{}".format(row, END)))
-#
-#             for col in range(x1_col, x2_col):
-#                 data.append("{}.{}".format(row, col))
-#
-#         if reverse:
-#             data = list(reversed(data))
-#         return data
-#
-#     def get_visible_range(self):
-#         """
-#         Returns a tuple of integers for the first and last row visible in the
-#         editor
-#         """
-#         a = self.index("@0,0")
-#         b = self.index("@0,%d" % self.winfo_height())
-#         return tuple(int(s.split(".")[0]) for s in (a, b))
+    def copy(self):
+        text_area = self.query_one("#text-area-content")
+        if text_area.selection:
+            import pyperclip
+            pyperclip.copy(text_area.selected_text)
+
+    def paste(self):
+        text_area = self.query_one("#text-area-content")
+        import pyperclip
+        text_area.insert(pyperclip.paste())
+
+    def clear(self):
+        self.query_one("#text-area-content").clear()

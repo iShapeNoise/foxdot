@@ -16,20 +16,89 @@ except Exception:
 from .tximport import *
 
 # Custom app modules
-from ..Code import write_to_file
+from ..Code import write_to_file, execute
 from ..Utils import get_pypi_version
 from .Format import *
 from .AppFunctions import *
 from ..Settings import *
 from .MenuBar import MenuBar, Menu
 from .Console import Console
-from .TextBox import ThreadedText
+from .TextBox import ThreadedText, FoxDotTextEditor
 from .LineNumbers import LineNumbers
+from .Treeview import TreeView
+from .MidiBar import MidiBar
+from .SearchBar import SearchBar
+
+from functools import partial
+from distutils.version import LooseVersion as VersionNumber
+import webbrowser
+import os
+import re
+import socket
+
+
+class FileOpenDialog(ModalScreen):
+    """Modal screen for opening files"""
+
+    def compose(self) -> ComposeResult:
+        with Container(id="file-dialog"):
+            yield Static("Open File", id="dialog-title")
+            yield DirectoryTree(Path.home(), id="file-tree")
+            with Horizontal(id="dialog-buttons"):
+                yield Button("Open", id="open-btn", variant="primary")
+                yield Button("Cancel", id="cancel-btn")
+
+    def on_directory_tree_file_selected(self, event) -> None:
+        """Handle file selection"""
+        if event.path.suffix == ".py":
+            self.dismiss(str(event.path))
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "open-btn":
+            try:
+                tree = self.query_one("#file-tree", DirectoryTree)
+                if tree.cursor_node and tree.cursor_node.data.path.is_file():
+                    self.dismiss(str(tree.cursor_node.data.path))
+            except Exception:
+                pass
+        elif event.button.id == "cancel-btn":
+            self.dismiss(None)
+
+
+class FileSaveDialog(ModalScreen):
+    """Modal screen for saving files"""
+
+    def __init__(self, default_name: str = "untitled.py"):
+        super().__init__()
+        self.default_name = default_name
+
+    def compose(self) -> ComposeResult:
+        with Container(id="file-dialog"):
+            yield Static("Save File As", id="dialog-title")
+            yield DirectoryTree(Path.home(), id="file-tree")
+            yield Input(value=self.default_name, placeholder="filename.py", id="filename-input")
+            with Horizontal(id="dialog-buttons"):
+                yield Button("Save", id="save-btn", variant="primary")
+                yield Button("Cancel", id="cancel-btn")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "save-btn":
+            filename = self.query_one("#filename-input", Input).value
+            tree = self.query_one("#file-tree", DirectoryTree)
+            if tree.cursor_node:
+                directory = tree.cursor_node.data.path
+                if directory.is_file():
+                    directory = directory.parent
+                full_path = directory / filename
+                self.dismiss(str(full_path))
+        elif event.button.id == "cancel-btn":
+            self.dismiss(None)
 
 
 class Editor(App):
-    """Main FoxDot TUI Application - Visual Structure Only"""
+    """Main FoxDot TUI Application"""
     CSS_PATH = FOXDOT_SETTINGS + "/" + "foxdot.css"
+    TITLE = "FoxDot >> PitchGlitch"
 
     # Reactive properties for component visibility
     show_menu = reactive(True)
@@ -38,6 +107,32 @@ class Editor(App):
     show_treeview = reactive(False)
     show_midibar = reactive(False)
     show_searchbar = reactive(False)
+
+    def __init__(self):
+        super().__init__()
+        self.current_filename = None
+        self.is_saved = True
+        self.font_size = 14
+
+    def on_mount(self) -> None:
+        """Called when app is mounted - set up keymap"""
+        # Define keymap to ensure FoxDot bindings work
+        foxdot_keymap = {
+            "foxdot.exec_block": "ctrl+enter",
+            "foxdot.exec_line": "alt+enter",
+            "foxdot.kill_all": "ctrl+period",
+            "foxdot.toggle_menu": "ctrl+m",
+            "foxdot.toggle_console": "ctrl+k",
+            "foxdot.toggle_linenumbers": "ctrl+0",
+            "foxdot.toggle_treeview": "ctrl+u",
+            "foxdot.toggle_searchbar": "ctrl+f",
+            "foxdot.toggle_midibar": "f1",
+            "foxdot.save_file": "ctrl+s",
+            "foxdot.open_file": "ctrl+o",
+            "foxdot.new_file": "ctrl+n",
+            "foxdot.select_all": "ctrl+a",
+        }
+        self.set_keymap(foxdot_keymap)
 
     def compose(self) -> ComposeResult:
         """Create the main layout structure"""
@@ -48,21 +143,21 @@ class Editor(App):
         with Container(id="main-container"):
             with Horizontal(id="editor-row"):
                 if self.show_treeview:
-                    yield Static("TREE\nVIEW", id="treeview")
+                    yield TreeView(id="treeview")
 
                 if self.show_linenumbers:
                     yield LineNumbers(id="linenumbers")
 
                 yield ThreadedText(
-                    text="# Welcome to FoxDot TUI!\n# Start live coding here...\n",
+                    text="",
                     id="text-editor"
                 )
 
             if self.show_searchbar:
-                yield Static("SEARCH BAR PLACEHOLDER", id="searchbar")
+                yield SearchBar(id="searchbar")
 
             if self.show_midibar:
-                yield Static("MIDI BAR PLACEHOLDER", id="midibar")
+                yield MidiBar(id="midibar")
 
             if self.show_console:
                 yield Console(id="console")
@@ -70,7 +165,7 @@ class Editor(App):
         yield Footer()
 
     def on_text_area_changed(self, event) -> None:
-        """ Handle text area changes"""
+        """Handle text area changes"""
         if self.show_linenumbers:
             try:
                 linenumbers = self.query_one("#linenumbers", LineNumbers)
@@ -79,32 +174,383 @@ class Editor(App):
                 # Count lines
                 line_count = len(text_area.text.split('\n'))
 
-                # Get current cursor line
+                # Get current cursor line (0-indexed, so add 1 for display)
                 cursor_row = text_area.cursor_location[0] + 1
+
+                # Ensure cursor_row doesn't exceed line_count
+                cursor_row = min(cursor_row, line_count)
 
                 # Update line numbers
                 linenumbers.update_line_numbers(line_count, cursor_row)
             except Exception:
                 pass
 
+    def on_foxdot_text_editor_exec_block(self, message: FoxDotTextEditor.ExecBlock) -> None:
+        """Handle execute block message"""
+        self.action_exec_block()
+
+    def on_foxdot_text_editor_exec_line(self, message: FoxDotTextEditor.ExecLine) -> None:
+        """Handle execute line message"""
+        self.action_exec_line()
+
+    def on_foxdot_text_editor_kill_all(self, message: FoxDotTextEditor.KillAll) -> None:
+        """Handle kill all message"""
+        self.action_kill_all()
+
+    def on_foxdot_text_editor_toggle_menu(self, message: FoxDotTextEditor.ToggleMenu) -> None:
+        """Handle toggle menu message"""
+        self.action_toggle_menu()
+
+    def on_foxdot_text_editor_toggle_console(self, message: FoxDotTextEditor.ToggleConsole) -> None:
+        """Handle toggle console message"""
+        self.action_toggle_console()
+
+    def on_foxdot_text_editor_toggle_linenumbers(self, message: FoxDotTextEditor.ToggleLineNumbers) -> None:
+        """Handle toggle line numbers message"""
+        self.action_toggle_linenumbers()
+
+    def on_foxdot_text_editor_toggle_treeview(self, message: FoxDotTextEditor.ToggleTreeView) -> None:
+        """Handle toggle tree view message"""
+        self.action_toggle_treeview()
+
+    def on_foxdot_text_editor_toggle_searchbar(self, message: FoxDotTextEditor.ToggleSearchBar) -> None:
+        """Handle toggle search bar message"""
+        self.action_toggle_searchbar()
+
+    def on_foxdot_text_editor_toggle_midibar(self, message: FoxDotTextEditor.ToggleMidiBar) -> None:
+        """Handle toggle MIDI bar message"""
+        self.action_toggle_midibar()
+
+    def on_foxdot_text_editor_save_file(self, message: FoxDotTextEditor.SaveFile) -> None:
+        """Handle save file message"""
+        self.action_save_file()
+
+    def on_foxdot_text_editor_open_file(self, message: FoxDotTextEditor.OpenFile) -> None:
+        """Handle open file message"""
+        self.action_open_file()
+
+    def on_foxdot_text_editor_new_file(self, message: FoxDotTextEditor.NewFile) -> None:
+        """Handle new file message"""
+        self.action_new_file()
+
+    def on_foxdot_text_editor_select_all(self, message: FoxDotTextEditor.SelectAll) -> None:
+        """Handle select all message"""
+        self.action_select_all()
+
     # Watch methods for reactive properties
     def watch_show_menu(self, show: bool) -> None:
         self.refresh(recompose=True)
+        self.call_after_refresh(self._restore_editor_focus)
 
     def watch_show_console(self, show: bool) -> None:
         self.refresh(recompose=True)
+        self.call_after_refresh(self._restore_editor_focus)
 
     def watch_show_linenumbers(self, show: bool) -> None:
         self.refresh(recompose=True)
+        self.call_after_refresh(self._restore_editor_focus)
 
     def watch_show_treeview(self, show: bool) -> None:
         self.refresh(recompose=True)
+        self.call_after_refresh(self._restore_editor_focus)
 
     def watch_show_midibar(self, show: bool) -> None:
         self.refresh(recompose=True)
+        self.call_after_refresh(self._restore_editor_focus)
 
     def watch_show_searchbar(self, show: bool) -> None:
         self.refresh(recompose=True)
+        self.call_after_refresh(self._restore_editor_focus)
+
+    def _restore_editor_focus(self) -> None:
+        """Helper method to restore focus to the text editor"""
+        try:
+            text_editor = self.query_one("#text-editor", ThreadedText)
+            text_area = text_editor.query_one("#text-area-content")
+            text_area.focus()
+        except Exception:
+            pass
+
+    # File operations
+    def action_new_file(self) -> None:
+        """Create a new file (clear current document)"""
+        try:
+            text_editor = self.query_one("#text-editor", ThreadedText)
+            text_editor.text = ""
+            self.current_filename = None
+            self.is_saved = True
+            self.notify("New file created")
+        except Exception as e:
+            self.notify(f"Error creating new file: {e}")
+
+    def action_open_file(self) -> None:
+        """Open a file using file dialog"""
+        def handle_open(filepath):
+            if filepath:
+                try:
+                    with open(filepath, 'r') as f:
+                        text = f.read()
+                    text_editor = self.query_one("#text-editor", ThreadedText)
+                    text_editor.text = text
+                    self.current_filename = filepath
+                    self.is_saved = True
+                    self.notify(f"Opened: {filepath}")
+                except Exception as e:
+                    self.notify(f"Error opening file: {e}")
+
+        self.push_screen(FileOpenDialog(), handle_open)
+
+    def action_save_file(self) -> None:
+        """Save current file - prompt for name if new"""
+        if self.current_filename:
+            try:
+                text_editor = self.query_one("#text-editor", ThreadedText)
+                text = text_editor.text
+                write_to_file(self.current_filename, text)
+                self.is_saved = True
+                self.notify(f"Saved: {self.current_filename}")
+            except Exception as e:
+                self.notify(f"Error saving file: {e}")
+        else:
+            self.action_save_as()
+
+    def action_save_as(self) -> None:
+        """Save file with new name using file dialog"""
+        def handle_save(filepath):
+            if filepath:
+                try:
+                    text_editor = self.query_one("#text-editor", ThreadedText)
+                    text = text_editor.text
+                    write_to_file(filepath, text)
+                    self.current_filename = filepath
+                    self.is_saved = True
+                    self.notify(f"Saved as: {filepath}")
+                except Exception as e:
+                    self.notify(f"Error saving file: {e}")
+
+        default_name = Path(self.current_filename).name if self.current_filename else "untitled.py"
+        self.push_screen(FileSaveDialog(default_name), handle_save)
+
+    # Edit operations
+    def action_undo(self) -> None:
+        """Undo last edit"""
+        try:
+            text_editor = self.query_one("#text-editor", ThreadedText)
+            text_area = text_editor.query_one("#text-area-content")
+            text_area.undo()
+            self.notify("Undo")
+        except Exception as e:
+            self.notify(f"Cannot undo: {e}")
+
+    def action_redo(self) -> None:
+        """Redo last undone edit"""
+        try:
+            text_editor = self.query_one("#text-editor", ThreadedText)
+            text_area = text_editor.query_one("#text-area-content")
+            text_area.redo()
+            self.notify("Redo")
+        except Exception as e:
+            self.notify(f"Cannot redo: {e}")
+
+    def action_select_all(self) -> None:
+        """Select all text in the editor"""
+        try:
+            text_editor = self.query_one("#text-editor", ThreadedText)
+            text_editor.select_all()
+            self.notify("All text selected")
+        except Exception as e:
+            self.notify(f"Error selecting all: {e}")
+
+    def action_cut(self) -> None:
+        """Cut selected text"""
+        try:
+            text_editor = self.query_one("#text-editor", ThreadedText)
+            text_editor.cut()
+            self.notify("Cut")
+        except Exception as e:
+            self.notify(f"Error cutting text: {e}")
+
+    def action_copy(self) -> None:
+        """Copy selected text"""
+        try:
+            text_editor = self.query_one("#text-editor", ThreadedText)
+            text_editor.copy()
+            self.notify("Copied")
+        except Exception as e:
+            self.notify(f"Error copying text: {e}")
+
+    def action_paste(self) -> None:
+        """Paste text from clipboard"""
+        try:
+            text_editor = self.query_one("#text-editor", ThreadedText)
+            text_editor.paste()
+            self.notify("Pasted")
+        except Exception as e:
+            self.notify(f"Error pasting text: {e}")
+
+    def action_duplicate_line(self) -> None:
+        """Duplicate the current line"""
+        self.notify("Duplicate line - requires implementation")
+
+    # View toggles
+    def action_toggle_menu(self) -> None:
+        """Toggle menu bar visibility"""
+        self.show_menu = not self.show_menu
+        if self.show_menu:
+            self.notify("Menu shown")
+        else:
+            self.notify("Menu hidden")
+
+    def action_toggle_linenumbers(self) -> None:
+        """Toggle line numbers visibility"""
+        self.show_linenumbers = not self.show_linenumbers
+        if self.show_linenumbers:
+            self.notify("Line numbers shown")
+        else:
+            self.notify("Line numbers hidden")
+
+    def action_toggle_treeview(self) -> None:
+        """Toggle tree view visibility"""
+        self.show_treeview = not self.show_treeview
+        if self.show_treeview:
+            self.notify("Tree view shown")
+        else:
+            self.notify("Tree view hidden")
+
+    def action_toggle_searchbar(self) -> None:
+        """Toggle search bar visibility"""
+        self.show_searchbar = not self.show_searchbar
+        if self.show_searchbar:
+            self.notify("Search bar shown")
+        else:
+            self.notify("Search bar hidden")
+
+    def action_toggle_midibar(self) -> None:
+        """Toggle MIDI bar visibility"""
+        self.show_midibar = not self.show_midibar
+        if self.show_midibar:
+            self.notify("MIDI bar shown")
+        else:
+            self.notify("MIDI bar hidden")
+
+    def action_toggle_console(self) -> None:
+        """Toggle console visibility"""
+        self.show_console = not self.show_console
+        if self.show_console:
+            self.notify("Console shown")
+        else:
+            self.notify("Console hidden")
+
+    def action_clear_console(self) -> None:
+        """Clear the console output"""
+        try:
+            console = self.query_one("#console", Console)
+            console.clear()
+        except Exception:
+            self.notify("Console not found")
+
+    def action_export_console(self) -> None:
+        """Export console log to file"""
+        self.notify("Export Console - requires file dialog implementation")
+
+    # Code execution
+    def action_exec_block(self) -> None:
+        """Execute the current code block"""
+        try:
+            text_editor = self.query_one("#text-editor", ThreadedText)
+            text = text_editor.text
+            execute(text)
+            self.notify("Executing code block...")
+        except Exception as e:
+            self.notify(f"Error executing block: {e}")
+
+    def action_exec_line(self) -> None:
+        """Execute the current line"""
+        try:
+            text_editor = self.query_one("#text-editor", ThreadedText)
+            # TODO: Get current line from cursor position
+            self.notify("Execute line - requires cursor position implementation")
+        except Exception as e:
+            self.notify(f"Error executing line: {e}")
+
+    def action_kill_all(self) -> None:
+        """Stop all player objects and clear the scheduling clock"""
+        try:
+            execute("_Clock.clear()", verbose=False)
+            self.notify("Clock cleared - all sounds stopped")
+        except Exception as e:
+            self.notify(f"Error clearing clock: {e}")
+
+    def action_open_samples_folder(self) -> None:
+        """Open samples folder in system file manager"""
+        import subprocess
+        if SYSTEM == WINDOWS:
+            cmd = 'explorer'
+        elif SYSTEM == MAC_OS:
+            cmd = 'open'
+        else:
+            cmd = 'xdg-open'
+        try:
+            subprocess.Popen([cmd, FOXDOT_SND])
+            self.notify(f"Opening samples folder: {FOXDOT_SND}")
+        except OSError as e:
+            self.notify(f"Error: {e}. Samples are in {FOXDOT_SND}")
+
+    def action_open_samples_chart(self) -> None:
+        """Open samples chart application"""
+        # TODO: Port SampleChart to Textual
+        self.notify("Samples Chart - requires porting from Tkinter")
+
+    def action_open_midi_mapper(self) -> None:
+        """Open MIDI mapper application"""
+        # TODO: Port MidiMapper to Textual
+        self.notify("MIDI Mapper - requires porting from Tkinter")
+
+    def action_visit_homepage(self) -> None:
+        """Open TUI FoxDot homepage in browser"""
+        import webbrowser
+        webbrowser.open("https://gitlab.com/iShapeNoise/foxdot")
+        self.notify("Opening TUI FoxDot homepage...")
+
+    def action_open_documentation(self) -> None:
+        """Open documentation in browser"""
+        import webbrowser
+        webbrowser.open("http://www.docs.foxdot.org/")
+        self.notify("Opening documentation...")
+
+    def action_start_listening(self) -> None:
+        """Toggle listening for connections"""
+        # TODO: Implement connection listening toggle
+        self.notify("Listen for connections - requires implementation")
+
+    def action_show_help(self) -> None:
+        """Display help message"""
+        ctrl = "Cmd" if SYSTEM == MAC_OS else "Ctrl"
+        help_text = f"""FoxDot Help:
+    -----------------------------------------
+    {ctrl}+Return: Execute code
+    {ctrl}+.     : Stop all sound
+    {ctrl}+=     : Increase font size
+    {ctrl}+-     : Decrease font size
+    {ctrl}+L     : Insert lambda symbol
+    {ctrl}+T     : Insert tilde symbol
+    {ctrl}+S     : Save your work
+    {ctrl}+O     : Open a file
+    {ctrl}+M     : Toggle the menu
+    {ctrl}+K     : Toggle Console
+    {ctrl}+U     : Toggle Treeview
+    {ctrl}+F     : Toggle Searchbar
+    {ctrl}+P     : Open Preferences
+    ---------------------------------------------------
+    Please visit foxdot.org for more information
+    ---------------------------------------------------"""
+        print(help_text)
+        self.notify("Help displayed in console")
+
+
+
+
+
 
     # FoxDot developer
     #     # Import configuration constants from existing system

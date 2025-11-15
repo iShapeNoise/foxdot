@@ -20,6 +20,10 @@ class Console(Static):
             id="console-content"
         )
 
+    def clear(self) -> None:
+        """Clear all console output"""
+        self.clear()
+
     # def setup_output_redirection(self):
     #     """Redirect stdout to console with queue-based threading"""
     #     # Based on current console.py queue system

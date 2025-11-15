@@ -24,9 +24,16 @@ class Menu(ModalScreen):
             yield Static(self.title, id="menu-title")
             yield OptionList(*self.menu_items, id="menu-options")
 
+    def on_mount(self) -> None:
+        """Disable separator options after mounting"""
+        option_list = self.query_one("#menu-options", OptionList)
+        for index, item in enumerate(self.menu_items):
+            if item == "---":
+                option_list.disable_option_at_index(index)
+
     def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
         """Handle menu option selection"""
-        selected = str(event.option_prompt)
+        selected = str(event.option.prompt)
         self.dismiss(selected)
 
 
@@ -126,13 +133,13 @@ class MenuBar(Static):
                 return
 
             if "New Document" in selection:
-                self.app.notify("New Document - not yet implemented")
+                self.app.action_new_file()
             elif "Open" in selection:
-                self.app.notify("Open - not yet implemented")
+                self.app.action_open_file()
             elif "Save As" in selection:
-                self.app.notify("Save As - not yet implemented")
+                self.app.action_save_as()
             elif "Save" in selection:
-                self.app.notify("Save - not yet implemented")
+                self.app.action_save_file()
             elif "Quit" in selection:
                 self.app.exit()
 
@@ -158,7 +165,25 @@ class MenuBar(Static):
         def handle_edit_action(selection):
             if selection is None or selection == "---":
                 return
-            self.app.notify(f"Edit: {selection} - not yet implemented")
+
+            if "Undo" in selection:
+                self.app.action_undo()
+            elif "Redo" in selection:
+                self.app.action_redo()
+            elif "Cut" in selection:
+                self.app.action_cut()
+            elif "Copy" in selection:
+                self.app.action_copy()
+            elif "Paste" in selection:
+                self.app.action_paste()
+            elif "Select All" in selection:
+                self.app.action_select_all()
+            elif "Increase Font Size" in selection:
+                self.app.action_zoom_in()
+            elif "Decrease Font Size" in selection:
+                self.app.action_zoom_out()
+            elif "Preferences" in selection:
+                self.app.action_show_preferences()
 
         self.app.push_screen(Menu(edit_options, "Edit"), handle_edit_action)
 
@@ -179,7 +204,25 @@ class MenuBar(Static):
         def handle_view_action(selection):
             if selection is None or selection == "---":
                 return
-            self.app.notify(f"View: {selection} - not yet implemented")
+
+            if "Toggle Menu" in selection:
+                self.app.action_toggle_menu()
+            elif "Toggle Line Numbers" in selection:
+                self.app.action_toggle_linenumbers()
+            elif "Toggle Treeview" in selection:
+                self.app.action_toggle_treeview()
+            elif "Toggle Searchbar" in selection:
+                self.app.action_toggle_searchbar()
+            elif "Toggle Midibar" in selection:
+                self.app.action_toggle_midibar()
+            elif "Toggle Console" in selection:
+                self.app.action_toggle_console()
+            elif "Clear Console" in selection:
+                # Clear console needs to be implemented
+                self.app.notify("Clear Console - not yet implemented")
+            elif "Export Console Log" in selection:
+                # Export console needs to be implemented
+                self.app.notify("Export Console Log - not yet implemented")
 
         self.app.push_screen(Menu(view_options, "View"), handle_view_action)
 
@@ -196,7 +239,16 @@ class MenuBar(Static):
         def handle_lang_action(selection):
             if selection is None or selection == "---":
                 return
-            self.app.notify(f"Language: {selection} - not yet implemented")
+
+            if "Evaluate Block" in selection:
+                self.app.action_exec_block()
+            elif "Evaluate Line" in selection:
+                self.app.action_exec_line()
+            elif "Clear Scheduling Clock" in selection:
+                self.app.action_kill_all()
+            elif "Listen for connections" in selection:
+                # Connection listening needs to be implemented
+                self.app.notify("Listen for connections - not yet implemented")
 
         self.app.push_screen(Menu(lang_options, "Language"), handle_lang_action)
 
@@ -210,7 +262,13 @@ class MenuBar(Static):
         def handle_tools_action(selection):
             if selection is None:
                 return
-            self.app.notify(f"Tools: {selection} - not yet implemented")
+
+            if "Samples Chart App" in selection:
+                # Samples chart needs to be implemented
+                self.app.notify("Samples Chart App - not yet implemented")
+            elif "Midi Mapper" in selection:
+                # MIDI mapper needs to be implemented
+                self.app.notify("Midi Mapper - not yet implemented")
 
         self.app.push_screen(Menu(tools_options, "Tools"), handle_tools_action)
 
@@ -227,6 +285,17 @@ class MenuBar(Static):
         def handle_help_action(selection):
             if selection is None or selection == "---":
                 return
-            self.app.notify(f"Help: {selection} - not yet implemented")
+
+            if "Display help message" in selection:
+                self.app.action_show_help()
+            elif "Visit TUI FoxDot Homepage" in selection:
+                # Homepage visit needs to be implemented
+                self.app.notify("Visit TUI FoxDot Homepage - not yet implemented")
+            elif "Documentation" in selection:
+                # Documentation needs to be implemented
+                self.app.notify("Documentation - not yet implemented")
+            elif "Open Samples Folder" in selection:
+                # Open samples folder needs to be implemented
+                self.app.notify("Open Samples Folder - not yet implemented")
 
         self.app.push_screen(Menu(help_options, "Help"), handle_help_action)

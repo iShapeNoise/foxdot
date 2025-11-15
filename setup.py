@@ -61,5 +61,7 @@ setup(name='FoxDot',
           'python-rtmidi',
           'soundplay',
           'python-osc',
-          'textual']
+          'textual',
+          'pyperclip',
+          'textual-textarea']
       )
